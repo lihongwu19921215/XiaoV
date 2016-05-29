@@ -2,14 +2,14 @@
 
 ## 简介
 
-XiaoV（小薇）是一个用 Java 写的 QQ 聊天机器人 Web 服务，主要用于[B3log](http://b3log.org)社群互动：
+XiaoV（小薇）是一个用 Java 写的 QQ 聊天机器人 Web 服务，主要用于 [B3log](http://b3log.org) 社群互动：
 
 * 监听 B3log 各个 QQ 群消息，发现有“感兴趣”的内容时：
   * 通过[图灵机器人](http://www.tuling123.com)进行智能回复
-  * 将[论坛](https://hacpai.com]的新帖进行推送
+  * 将[论坛](https://hacpai.com)的新帖进行推送
 * 加小薇为好友后可通过暗号（key）让她群发消息
 
-如果你需要一个连通 QQ 群和论坛内容的机器人，小薇是个不错的选择 :-p
+如果你需要一个连通 QQ 群和论坛内容的机器人，小薇是个不错的选择 :smirk:
 
 ### 作者
 
