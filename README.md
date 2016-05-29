@@ -14,6 +14,10 @@ XiaoV（小薇）是一个用 Java 写的 QQ 聊天机器人 Web 服务，可以
 
 小薇她爸 [Daniel](https://github.com/88250)，妈 [Vanessa](https://github.com/Vanessa)，其他好心人可以在[这里](https://github.com/b3log/xiaov/graphs/contributors)看到。
 
+## API
+
+TBD
+
 ## 鸣谢
 
 小薇的诞生离不开以下开源项目/产品服务：
