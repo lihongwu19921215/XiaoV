@@ -1,0 +1,279 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    Description: XiaoV POM.
+    Version: 1.0.0.0, May 29, 2016
+    Author: Liang Ding
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>org.b3log</groupId>
+    <artifactId>xiaov</artifactId>
+    <packaging>war</packaging>
+    <version>1.0.0</version>
+    <name>XiaoV</name>
+    <url>https://github.com/b3log/xiaov</url>
+    <description>
+        Yet another QQ Bot. 又一个 QQ 聊天机器人，她的名字叫做小薇~
+    </description>
+    <inceptionYear>2016</inceptionYear>
+
+    <!-- Properties -->
+    <properties>
+        <latke.version>2.0.2</latke.version>
+        
+        <servlet.version>3.1.0</servlet.version>
+        <jetty.version>9.2.7.v20150116</jetty.version>
+        <slf4j.version>1.7.7</slf4j.version>
+
+        <!-- maven plugin -->
+        <maven-compiler-plugin.version>3.3</maven-compiler-plugin.version>
+        <maven-resources-plugin.version>2.7</maven-resources-plugin.version>
+        <maven-license-plugin.version>1.9.0</maven-license-plugin.version>
+
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
+
+    <organization>
+        <name>B3log</name>
+        <url>http://b3log.org</url>
+    </organization>
+
+    <licenses>
+        <license>
+            <name>Apache License, Version 2.0</name>
+            <url>http://www.apache.org/licenses/LICENSE-2.0</url>
+        </license>
+    </licenses>
+
+    <developers>
+        <developer>
+            <id>DL88250@gmail.com</id>
+            <name>Liang Ding</name>
+            <email>DL88250@gmail.com</email>
+            <url>http://88250.b3log.org</url>
+            <roles>
+                <role>Lead</role>
+                <role>Initial Committer</role>
+            </roles>
+            <organization>B3log</organization>
+            <organizationUrl>http://b3log.org</organizationUrl>
+            <timezone>+8</timezone>
+        </developer>
+    </developers>
+
+    <issueManagement>
+        <system>GitHub Issues</system>
+        <url>https://github.com/b3log/xiaov/issues</url>
+    </issueManagement>
+
+    <scm>
+        <url>https://github.com/b3log/xiaov</url>
+    </scm>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-log4j12</artifactId>
+            <version>${slf4j.version}</version>
+        </dependency>
+        
+        <dependency>
+            <groupId>org.b3log</groupId>
+            <artifactId>latke</artifactId>
+            <version>${latke.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.h2database</groupId>
+                    <artifactId>h2</artifactId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>mail</artifactId>
+                    <groupId>javax.mail</groupId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.jboss</groupId>
+                    <artifactId>jboss-vfs</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        
+        <dependency>
+            <groupId>org.freemarker</groupId>
+            <artifactId>freemarker</artifactId>
+            <version>2.3.23</version>
+        </dependency>
+        
+        <dependency>
+            <groupId>javax.servlet</groupId>
+            <artifactId>javax.servlet-api</artifactId>
+            <version>${servlet.version}</version>
+        </dependency>
+        
+        <dependency>
+            <groupId>com.scienjus</groupId>
+            <artifactId>smartqq</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
+
+    </dependencies>
+
+    <build>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <excludes>
+                    <exclude>etc/</exclude>
+                </excludes>
+            </resource>
+        </resources>
+        
+        <plugins>
+            <plugin>
+                <groupId>org.eclipse.jetty</groupId>
+                <artifactId>jetty-maven-plugin</artifactId>
+                <version>${jetty.version}</version>
+                <configuration>
+                    <httpConnector>
+                        <port>9090</port>
+                    </httpConnector>
+                    <stopKey>stop</stopKey>
+                    <stopPort>5500</stopPort>
+                    <webAppConfig>
+                        <contextPath>/</contextPath>
+                    </webAppConfig>
+                    <scanIntervalSeconds>1</scanIntervalSeconds>
+                </configuration>
+            </plugin>
+            
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-resources-plugin</artifactId>
+                <version>${maven-resources-plugin.version}</version>
+                <configuration>
+                    <encoding>UTF-8</encoding>
+                </configuration>
+            </plugin>
+            
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>${maven-compiler-plugin.version}</version>
+                <configuration>
+                    <source>1.7</source>
+                    <target>1.7</target>
+                    <encoding>UTF-8</encoding>
+                </configuration>
+            </plugin>
+            
+            <plugin>
+                <groupId>com.mycila.maven-license-plugin</groupId>
+                <artifactId>maven-license-plugin</artifactId>
+                <version>${maven-license-plugin.version}</version>
+                <configuration>
+                    <basedir>${basedir}</basedir>
+                    <header>src/main/resources/etc/header.txt</header>
+                    <quiet>false</quiet>
+                    <failIfMissing>true</failIfMissing>
+                    <aggregate>true</aggregate>
+                    <strictCheck>true</strictCheck>
+                    <includes>
+                        <include>**/src/*/java/**/*.java</include>
+                        <include>**/src/*/webapp/js/*.js</include>
+                        <include>**/src/*/webapp/css/*.css</include>
+                        <include>**/src/*/resources/*.properties</include>
+                        <include>**/src/*/webapp/WEB-INF/*.xml</include>
+                    </includes>
+                    <excludes>
+                        <exclude>**/src/main/java/**/package-info.java</exclude>
+                        <exclude>**/src/*/webapp/js/lib/*.js</exclude>
+                    </excludes>
+
+                    <useDefaultExcludes>true</useDefaultExcludes>
+                    <mapping>
+                        <java>SLASHSTAR_STYLE</java>
+                    </mapping>
+                    <useDefaultMapping>true</useDefaultMapping>
+                    <properties>
+                        <year>2012-2016</year>
+                        <devTeam>b3log.org &amp; hacpai.com</devTeam>
+                    </properties>
+                    <encoding>UTF-8</encoding>
+                </configuration>
+                <executions>
+                    <execution>
+                        <phase>generate-resources</phase>
+                        <goals>
+                            <goal>format</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+
+        <finalName>xiaov</finalName>
+    </build>
+    
+    <repositories>
+        <repository>
+            <id>central</id>
+            <name>Central Repository</name>
+            <url>http://repo1.maven.org/maven2</url>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+        </repository>
+        
+        <repository>
+            <id>sonatype-nexus-snapshots</id>
+            <name>Snapshots Repository</name>
+            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+            <releases>
+                <enabled>false</enabled>
+            </releases>
+        </repository>
+
+        <!-- Just for SmartQQ -->        
+        <repository>
+            <id>scienjus-mvn-repo</id>
+            <url>https://raw.github.com/ScienJus/maven/snapshot/</url>
+            <snapshots>
+                <enabled>true</enabled>
+                <updatePolicy>daily</updatePolicy>
+            </snapshots>
+        </repository>
+    </repositories>
+    
+    <pluginRepositories>
+        <pluginRepository>
+            <id>central</id>
+            <name>Central Repository</name>
+            <url>http://repo1.maven.org/maven2</url>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+        </pluginRepository>
+        <pluginRepository>
+            <id>sonatype-nexus-snapshots</id>
+            <name>Snapshots Repository</name>
+            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+            <releases>
+                <enabled>false</enabled>
+            </releases>
+        </pluginRepository>
+    </pluginRepositories>
+</project>
+
