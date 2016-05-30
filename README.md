@@ -25,7 +25,7 @@ XiaoV（小薇）是一个用 Java 写的 QQ 聊天机器人 Web 服务，可以
 
 ### 为什么会出现“发送失败，Api返回码[1202]”？
 
-这个问题是因为 QQ 服务器判断消息有问题时的返回，具体可关注这个 [issue](https://github.com/ScienJus/smartqq/issues/11)
+这个问题是因为 QQ 服务器判断消息有问题时的返回，具体可关注这个 [issue](https://github.com/ScienJus/smartqq/issues/11)。
 
 ## 启动
 
@@ -43,7 +43,7 @@ XiaoV（小薇）是一个用 Java 写的 QQ 聊天机器人 Web 服务，可以
 * qq.bot.name 定义了机器人的名字，这个主要是用于识别群消息是否“感兴趣”，比如对于群消息：“小薇，你吃过饭了吗？”包含了机器人的名字，机器人就对其进行处理
 * qq.bot.key 定义了管理 QQ（加了机器人为好友的 QQ）发过来的消息群发的口令，需要消息开头是这个口令，验证过后才会群发后面的消息内容
 * qq.bot.pushGroups 定义了群发的群名，用 `,` 分隔多个群
-* bot.follow.keywords 定义了监听群消息时的关键词，碰到这些词就做处理，比如对于群消息：“如何能在 3 天之内精通 Java 呢？”包含了关键词 Java，机器人就对其进行处理
+* bot.follow.keywords 定义了监听群消息时的关键词，碰到这些词就做处理，比如对于群消息：“如何能在 3 天内精通 Java 呢？”包含了关键词 Java，机器人就对其进行处理
 * forum.api & forum.key 定义了论坛 API 地址和口令，小薇会将所有监听到的消息通过该 API 转发到论坛
 
 ## API
