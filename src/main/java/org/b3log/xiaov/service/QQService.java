@@ -22,15 +22,22 @@ import com.scienjus.smartqq.model.Group;
 import com.scienjus.smartqq.model.GroupMessage;
 import com.scienjus.smartqq.model.Message;
 import java.io.UnsupportedEncodingException;
+import java.net.URL;
 import java.net.URLEncoder;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.inject.Inject;
+import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.lang.StringUtils;
 import org.b3log.latke.logging.Level;
 import org.b3log.latke.logging.Logger;
 import org.b3log.latke.service.annotation.Service;
+import org.b3log.latke.servlet.HTTPRequestMethod;
+import org.b3log.latke.urlfetch.HTTPRequest;
+import org.b3log.latke.urlfetch.HTTPResponse;
+import org.b3log.latke.urlfetch.URLFetchService;
+import org.b3log.latke.urlfetch.URLFetchServiceFactory;
 import org.b3log.latke.util.Strings;
 import org.b3log.xiaov.util.XiaoVs;
 
@@ -38,7 +45,7 @@ import org.b3log.xiaov.util.XiaoVs;
  * QQ service.
  *
  * @author <a href="http://88250.b3log.org">Liang Ding</a>
- * @version 1.0.0.0, May 29, 2016
+ * @version 1.1.0.0, May 30, 2016
  * @since 1.0.0
  */
 @Service
@@ -66,6 +73,11 @@ public class QQService {
      */
     @Inject
     private TuringQueryService turingQueryService;
+
+    /**
+     * URL fetch service.
+     */
+    private static final URLFetchService URL_FETCH_SVC = URLFetchServiceFactory.getURLFetchService();
 
     /**
      * Initializes QQ client.
@@ -99,6 +111,14 @@ public class QQService {
 
                         final String content = message.getContent();
 
+                        // Push to forum
+                        String qqMsg = content.replaceAll("\\[\"face\",[0-9]+\\]", "");
+                        if (StringUtils.isNotBlank(qqMsg)) {
+                            final String userName = Long.toHexString(message.getUserId());
+                            qqMsg = "<p>" + qqMsg + "</p>";
+                            sendToForum(qqMsg, userName);
+                        }
+
                         String msg = "";
                         if (StringUtils.contains(content, XiaoVs.getString("qq.bot.name"))
                                 || (StringUtils.length(content) > 6
@@ -120,7 +140,7 @@ public class QQService {
                         for (final String kw : keywords) {
                             if (StringUtils.containsIgnoreCase(content, kw)) {
                                 keyword = kw;
-                                
+
                                 break;
                             }
                         }
@@ -154,6 +174,31 @@ public class QQService {
                 }
             }
         }).start();
+    }
+
+    private void sendToForum(final String msg, final String user) {
+        final String forumAPI = XiaoVs.getString("forum.api");
+        final String forumKey = XiaoVs.getString("forum.key");
+
+        final HTTPRequest request = new HTTPRequest();
+        request.setRequestMethod(HTTPRequestMethod.POST);
+
+        try {
+            request.setURL(new URL(forumAPI));
+
+            final String body = "key=" + URLEncoder.encode(forumKey, "UTF-8")
+                    + "&msg=" + URLEncoder.encode(msg, "UTF-8")
+                    + "&user=" + URLEncoder.encode(user, "UTF-8");
+            request.setPayload(body.getBytes("UTF-8"));
+
+            final HTTPResponse response = URL_FETCH_SVC.fetch(request);
+            final int sc = response.getResponseCode();
+            if (HttpServletResponse.SC_OK != sc) {
+                LOGGER.warn("Sends message to Forum status code is [" + sc + "]");
+            }
+        } catch (final Exception e) {
+            LOGGER.log(Level.ERROR, "Sends message to Forum failed: " + e.getMessage());
+        }
     }
 
     /**
