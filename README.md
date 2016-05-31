@@ -4,7 +4,7 @@
 
 XiaoV（小薇）是一个用 Java 写的 QQ 聊天机器人 Web 服务，可以用于社群互动：
 
-* 监听多个 QQ 群消息，发现有“感兴趣”的内容时通过[图灵机器人](http://www.tuling123.com)进行智能回复
+* 监听多个 QQ 群消息，发现有“感兴趣”的内容时通过[图灵机器人](http://www.tuling123.com)或百度机器人进行智能回复
 * 监听到的 QQ 群消息可以配置推送到论坛某个接口上，以实现论坛弹幕或者动态聚合效果，请看[实例](https://hacpai.com/community)
 * 在论坛代码中调用小薇进行 QQ 消息推送，比如论坛有新帖时自动推送到 QQ 群
 * 加小薇为好友后可通过暗号（key）让她群发消息
@@ -70,5 +70,6 @@ XiaoV（小薇）是一个用 Java 写的 QQ 聊天机器人 Web 服务，可以
 小薇的诞生离不开以下开源项目/产品服务：
 
 * [Smart QQ Java](https://github.com/ScienJus/smartqq)：封装了 SmartQQ（WebQQ）的 API，完成 QQ 通讯实现
-* [图灵机器人](http://www.tuling123.com)：赋予了小薇抖机灵的能力....
+* [图灵机器人](http://www.tuling123.com)：赋予了小薇抖机灵的能力..
+* [百度机器人](https://baidu.com)：再次赋予了小薇抖机灵的能力....
 * [Latke](https://github.com/b3log/latke)：简洁高效的 Java Web 框架 
