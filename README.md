@@ -67,5 +67,5 @@ XiaoV（小薇）是一个用 Java 写的 QQ 聊天机器人 Web 服务，可以
 小薇的诞生离不开以下开源项目/产品服务：
 
 * [Smart QQ Java](https://github.com/ScienJus/smartqq)：封装了 SmartQQ（WebQQ）的 API，完成 QQ 通讯实现
-* [图灵机器人](http://www.tuling123.com)：给予了小薇抖机灵的能力....
+* [图灵机器人](http://www.tuling123.com)：赋予了小薇抖机灵的能力....
 * [Latke](https://github.com/b3log/latke)：简洁高效的 Java Web 框架 
