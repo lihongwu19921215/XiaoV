@@ -15,20 +15,15 @@
  */
 package org.b3log.xiaov.service;
 
-import com.scienjus.smartqq.callback.MessageCallback;
-import com.scienjus.smartqq.client.SmartQQClient;
-import com.scienjus.smartqq.model.DiscussMessage;
-import com.scienjus.smartqq.model.Group;
-import com.scienjus.smartqq.model.GroupMessage;
-import com.scienjus.smartqq.model.Message;
-import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletResponse;
+
 import org.apache.commons.lang.StringUtils;
 import org.b3log.latke.logging.Level;
 import org.b3log.latke.logging.Logger;
@@ -40,6 +35,13 @@ import org.b3log.latke.urlfetch.URLFetchService;
 import org.b3log.latke.urlfetch.URLFetchServiceFactory;
 import org.b3log.latke.util.Strings;
 import org.b3log.xiaov.util.XiaoVs;
+
+import com.scienjus.smartqq.callback.MessageCallback;
+import com.scienjus.smartqq.client.SmartQQClient;
+import com.scienjus.smartqq.model.DiscussMessage;
+import com.scienjus.smartqq.model.Group;
+import com.scienjus.smartqq.model.GroupMessage;
+import com.scienjus.smartqq.model.Message;
 
 /**
  * QQ service.
@@ -73,6 +75,13 @@ public class QQService {
      */
     @Inject
     private TuringQueryService turingQueryService;
+    
+    @Inject
+    private BaiduQueryService baiduQueryService;
+    
+    private static final String QQ_BOT_TYPE = XiaoVs.getString("qq.bot.type");
+    
+    private static final String QQ_BOT_NAME = XiaoVs.getString("qq.bot.name");
 
     /**
      * URL fetch service.
@@ -118,13 +127,11 @@ public class QQService {
                             qqMsg = "<p>" + qqMsg + "</p>";
                             sendToForum(qqMsg, userName);
                         }
-
                         String msg = "";
                         if (StringUtils.contains(content, XiaoVs.getString("qq.bot.name"))
                                 || (StringUtils.length(content) > 6
                                 && (StringUtils.contains(content, "?") || StringUtils.contains(content, "？") || StringUtils.contains(content, "问")))) {
                             msg = answer(content);
-
                             LOGGER.info(content + ": " + msg);
                         }
 
@@ -140,23 +147,18 @@ public class QQService {
                         for (final String kw : keywords) {
                             if (StringUtils.containsIgnoreCase(content, kw)) {
                                 keyword = kw;
-
                                 break;
                             }
                         }
-
                         String ret = "";
                         if (StringUtils.isNotBlank(keyword)) {
-                            try {
-                                ret = "这里可能有该问题的答案： https://hacpai.com/search?key="
-                                        + URLEncoder.encode(keyword, "UTF-8");
-                            } catch (final UnsupportedEncodingException e) {
-                                LOGGER.log(Level.ERROR, "Search key encoding failed", e);
-                            }
-                        } else if (StringUtils.contains(content, XiaoVs.getString("qq.bot.name"))) {
+                                ret = "我好像迷路了！";
+                        } else if (StringUtils.contains(content, QQ_BOT_NAME) && QQ_BOT_TYPE.equals("1")) {
                             ret = turingQueryService.chat("Vanessa", content);
                         }
-
+                        else if (StringUtils.contains(content, QQ_BOT_NAME) && QQ_BOT_TYPE.equals("2")) {
+                        	ret = baiduQueryService.chat(content);
+                        }
                         return ret;
                     }
 
