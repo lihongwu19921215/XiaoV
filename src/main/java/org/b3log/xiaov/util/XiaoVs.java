@@ -21,7 +21,7 @@ import java.util.ResourceBundle;
  * XiaoV utilities.
  *
  * @author <a href="http://88250.b3log.org">Liang Ding</a>
- * @version 1.0.0.0, May 29, 2016
+ * @version 1.0.0.1, May 31, 2016
  * @since 1.0.0
  */
 public class XiaoVs {
@@ -30,6 +30,11 @@ public class XiaoVs {
      * Configurations.
      */
     private static final ResourceBundle CFG = ResourceBundle.getBundle("xiaov");
+
+    /**
+     * QQ Bot name.
+     */
+    public static final String QQ_BOT_NAME = XiaoVs.getString("qq.bot.name");
 
     /**
      * Gets a configuration string property with the specified key.

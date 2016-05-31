@@ -20,10 +20,8 @@ import java.net.URLEncoder;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletResponse;
-
 import org.apache.commons.lang.StringUtils;
 import org.b3log.latke.logging.Level;
 import org.b3log.latke.logging.Logger;
@@ -35,19 +33,19 @@ import org.b3log.latke.urlfetch.URLFetchService;
 import org.b3log.latke.urlfetch.URLFetchServiceFactory;
 import org.b3log.latke.util.Strings;
 import org.b3log.xiaov.util.XiaoVs;
-
 import com.scienjus.smartqq.callback.MessageCallback;
 import com.scienjus.smartqq.client.SmartQQClient;
 import com.scienjus.smartqq.model.DiscussMessage;
 import com.scienjus.smartqq.model.Group;
 import com.scienjus.smartqq.model.GroupMessage;
 import com.scienjus.smartqq.model.Message;
+import java.io.UnsupportedEncodingException;
 
 /**
  * QQ service.
  *
  * @author <a href="http://88250.b3log.org">Liang Ding</a>
- * @version 1.1.0.0, May 30, 2016
+ * @version 1.2.0.0, May 31, 2016
  * @since 1.0.0
  */
 @Service
@@ -75,13 +73,17 @@ public class QQService {
      */
     @Inject
     private TuringQueryService turingQueryService;
-    
+
+    /**
+     * Baidu bot query service.
+     */
     @Inject
     private BaiduQueryService baiduQueryService;
-    
-    private static final String QQ_BOT_TYPE = XiaoVs.getString("qq.bot.type");
-    
-    private static final String QQ_BOT_NAME = XiaoVs.getString("qq.bot.name");
+
+    /**
+     * Bot type.
+     */
+    private static final int QQ_BOT_TYPE = XiaoVs.getInt("qq.bot.type");
 
     /**
      * URL fetch service.
@@ -119,11 +121,11 @@ public class QQService {
                         }
 
                         final String content = message.getContent();
+                        final String userName = Long.toHexString(message.getUserId());
 
                         // Push to forum
                         String qqMsg = content.replaceAll("\\[\"face\",[0-9]+\\]", "");
                         if (StringUtils.isNotBlank(qqMsg)) {
-                            final String userName = Long.toHexString(message.getUserId());
                             qqMsg = "<p>" + qqMsg + "</p>";
                             sendToForum(qqMsg, userName);
                         }
@@ -131,7 +133,7 @@ public class QQService {
                         if (StringUtils.contains(content, XiaoVs.getString("qq.bot.name"))
                                 || (StringUtils.length(content) > 6
                                 && (StringUtils.contains(content, "?") || StringUtils.contains(content, "？") || StringUtils.contains(content, "问")))) {
-                            msg = answer(content);
+                            msg = answer(content, userName);
                             LOGGER.info(content + ": " + msg);
                         }
 
@@ -140,25 +142,35 @@ public class QQService {
                         }
                     }
 
-                    private String answer(final String content) {
+                    private String answer(final String content, final String userName) {
                         String keyword = "";
                         String[] keywords = StringUtils.split(XiaoVs.getString("bot.follow.keywords"), ",");
                         keywords = Strings.trimAll(keywords);
                         for (final String kw : keywords) {
                             if (StringUtils.containsIgnoreCase(content, kw)) {
                                 keyword = kw;
+
                                 break;
                             }
                         }
+
                         String ret = "";
                         if (StringUtils.isNotBlank(keyword)) {
-                                ret = "我好像迷路了！";
-                        } else if (StringUtils.contains(content, QQ_BOT_NAME) && QQ_BOT_TYPE.equals("1")) {
-                            ret = turingQueryService.chat("Vanessa", content);
+                            try {
+                                ret = XiaoVs.getString("bot.follow.keywordAnswer");
+                                ret = StringUtils.replace(ret, "{keyword}",
+                                        URLEncoder.encode(keyword, "UTF-8"));
+                            } catch (final UnsupportedEncodingException e) {
+                                LOGGER.log(Level.ERROR, "Search key encoding failed", e);
+                            }
+                        } else if (StringUtils.contains(content, XiaoVs.QQ_BOT_NAME)) {
+                            if (1 == QQ_BOT_TYPE) {
+                                ret = turingQueryService.chat(userName, content);
+                            } else if (2 == QQ_BOT_TYPE) {
+                                ret = baiduQueryService.chat(content);
+                            }
                         }
-                        else if (StringUtils.contains(content, QQ_BOT_NAME) && QQ_BOT_TYPE.equals("2")) {
-                        	ret = baiduQueryService.chat(content);
-                        }
+
                         return ret;
                     }
 
