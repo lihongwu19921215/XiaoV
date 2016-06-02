@@ -27,6 +27,10 @@ XiaoV（小薇）是一个用 Java 写的 QQ 聊天机器人 Web 服务，可以
 
 这个问题是因为 QQ 服务器判断消息有问题时的返回，具体可关注这个 [issue](https://github.com/ScienJus/smartqq/issues/11)。
 
+### 输出日志为什么是乱码？
+
+是由于 Windows 下面控制台的编码不是 UTF-8 导致，可以将 src/main/resources/log4j.properties 中的 log4j.appender.stdout.Encoding=UTF-8 删掉。
+
 ## 启动
 
 1. 安装好 Java 1.7+、Maven 2+
