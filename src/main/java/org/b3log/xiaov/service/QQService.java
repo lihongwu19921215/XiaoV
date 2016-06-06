@@ -134,12 +134,6 @@ public class QQService {
                                 || (StringUtils.length(content) > 6
                                 && (StringUtils.contains(content, "?") || StringUtils.contains(content, "？") || StringUtils.contains(content, "问")))) {
                             msg = answer(content, userName);
-                            if (StringUtils.contains(msg, "Api返回码[1202]")) {
-                                msg = answer(content, userName);
-                                LOGGER.info("[Retried] " + content + ": " + msg);
-                            } else {
-                                LOGGER.info("[Once] " + content + ": " + msg);
-                            }
                         }
 
                         if (StringUtils.isNotBlank(msg)) {
