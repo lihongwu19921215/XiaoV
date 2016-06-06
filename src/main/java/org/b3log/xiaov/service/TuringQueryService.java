@@ -67,7 +67,24 @@ public class TuringQueryService {
      * @param msg the specified message
      * @return robot returned message, return {@code null} if not found
      */
-    public String chat(final String userName, final String msg) {
+    public String chat(final String userName, String msg) {
+        if (StringUtils.isBlank(msg)) {
+            return null;
+        }
+
+        if (msg.startsWith(XiaoVs.QQ_BOT_NAME + " ")) {
+            msg = msg.replace(XiaoVs.QQ_BOT_NAME + " ", "");
+        }
+        if (msg.startsWith(XiaoVs.QQ_BOT_NAME + "，")) {
+            msg = msg.replace(XiaoVs.QQ_BOT_NAME + "，", "");
+        }
+        if (msg.startsWith(XiaoVs.QQ_BOT_NAME + ",")) {
+            msg = msg.replace(XiaoVs.QQ_BOT_NAME + ",", "");
+        }
+        if (msg.startsWith(XiaoVs.QQ_BOT_NAME)) {
+            msg = msg.replace(XiaoVs.QQ_BOT_NAME, "");
+        }
+
         if (StringUtils.isBlank(userName) || StringUtils.isBlank(msg)) {
             return null;
         }

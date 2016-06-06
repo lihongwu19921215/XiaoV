@@ -247,7 +247,7 @@ public class QQService {
         new Thread(new Runnable() {
             @Override
             public void run() {
-                final int maxRetries = 2;
+                final int maxRetries = 3;
                 int retries = 0;
                 while (retries < maxRetries) {
                     retries++;

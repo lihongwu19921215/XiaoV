@@ -9,11 +9,16 @@ XiaoV（小薇）是一个用 Java 写的 QQ 聊天机器人 Web 服务，可以
 * 在论坛代码中调用小薇进行 QQ 消息推送，比如论坛有新帖时自动推送到 QQ 群
 * 加小薇为好友后可通过暗号（key）让她群发消息
 
-总之，如果你需要一个连通 QQ 群和论坛的机器人，小薇是个不错的选择 :smirk:
+总之，如果你需要一个连通 QQ 群和论坛的机器人，小薇是个不错的选择！
 
 ### 作者
 
 小薇她爸 [Daniel](https://github.com/88250)，妈 [Vanessa](https://github.com/Vanessa)，其他好心人可以在[这里](https://github.com/b3log/xiaov/graphs/contributors)看到。
+
+### 体验
+
+* 加 QQ 群 13139268，然后发消息“小薇，你好！”
+* 在论坛“社群动态”页面可看到由 QQ 群同步过来的消息
 
 ## FAQ
 

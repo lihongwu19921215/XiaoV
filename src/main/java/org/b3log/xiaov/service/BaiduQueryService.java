@@ -69,8 +69,9 @@ public class BaiduQueryService {
             return null;
         }
 
-        String BAIDU_URL = "https://sp0.baidu.com/yLsHczq6KgQFm2e88IuM_a/s?sample_name=bear_brain&request_query=#MSG#&bear_type=2";
-
+        if (msg.startsWith(XiaoVs.QQ_BOT_NAME + " ")) {
+            msg = msg.replace(XiaoVs.QQ_BOT_NAME + " ", "");
+        }
         if (msg.startsWith(XiaoVs.QQ_BOT_NAME + "，")) {
             msg = msg.replace(XiaoVs.QQ_BOT_NAME + "，", "");
         }
@@ -80,6 +81,12 @@ public class BaiduQueryService {
         if (msg.startsWith(XiaoVs.QQ_BOT_NAME)) {
             msg = msg.replace(XiaoVs.QQ_BOT_NAME, "");
         }
+
+        if (StringUtils.isBlank(msg)) {
+            msg = "你好~";
+        }
+
+        String BAIDU_URL = "https://sp0.baidu.com/yLsHczq6KgQFm2e88IuM_a/s?sample_name=bear_brain&request_query=#MSG#&bear_type=2";
 
         final HTTPRequest request = new HTTPRequest();
         request.setRequestMethod(HTTPRequestMethod.POST);
