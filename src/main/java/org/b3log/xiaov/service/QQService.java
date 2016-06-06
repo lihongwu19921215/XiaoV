@@ -45,7 +45,7 @@ import java.io.UnsupportedEncodingException;
  * QQ service.
  *
  * @author <a href="http://88250.b3log.org">Liang Ding</a>
- * @version 1.2.0.0, May 31, 2016
+ * @version 1.2.0.1, Jun 6, 2016
  * @since 1.0.0
  */
 @Service
@@ -134,7 +134,12 @@ public class QQService {
                                 || (StringUtils.length(content) > 6
                                 && (StringUtils.contains(content, "?") || StringUtils.contains(content, "？") || StringUtils.contains(content, "问")))) {
                             msg = answer(content, userName);
-                            LOGGER.info(content + ": " + msg);
+                            if (StringUtils.contains(msg, "Api返回码[1202]")) {
+                                msg = answer(content, userName);
+                                LOGGER.info("[Retried] " + content + ": " + msg);
+                            } else {
+                                LOGGER.info("[Once] " + content + ": " + msg);
+                            }
                         }
 
                         if (StringUtils.isNotBlank(msg)) {
