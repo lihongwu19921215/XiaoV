@@ -40,6 +40,8 @@ import com.scienjus.smartqq.model.Group;
 import com.scienjus.smartqq.model.GroupMessage;
 import com.scienjus.smartqq.model.Message;
 import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
+import org.b3log.latke.util.CollectionUtils;
 
 /**
  * QQ service.
@@ -61,12 +63,24 @@ public class QQService {
      *
      * &lt;groupId, group&gt;
      */
-    private final Map<Long, Group> QQ_GROUPS = new HashMap<Long, Group>();
+    private final Map<Long, Group> QQ_GROUPS = new HashMap<>();
 
     /**
      * QQ client.
      */
-    private SmartQQClient qqClient;
+    private SmartQQClient xiaoV;
+
+    /**
+     * QQ client listener.
+     */
+    private SmartQQClient xiaoVListener;
+
+    /**
+     * Sent messages.
+     *
+     * &lt;groupId, messages&gt;
+     */
+    private List<String> GROUP_SENT_MSGS = new ArrayList<>();
 
     /**
      * Turing query service.
@@ -94,99 +108,51 @@ public class QQService {
      * Initializes QQ client.
      */
     public void initQQClient() {
-        new Thread(new Runnable() {
+        xiaoV = new SmartQQClient(new MessageCallback() {
             @Override
-            public void run() {
-                qqClient = new SmartQQClient(new MessageCallback() {
-                    @Override
-                    public void onMessage(final Message message) {
-                        final String content = message.getContent();
+            public void onMessage(final Message message) {
+                onQQPersonalMessage(message);
+            }
 
-                        final String key = XiaoVs.getString("qq.bot.key");
-                        if (!StringUtils.startsWith(content, key)) {
-                            return;
-                        }
+            @Override
+            public void onGroupMessage(final GroupMessage message) {
+                onQQGroupMessage(message);
+            }
 
-                        final String msg = StringUtils.substringAfter(content, key);
-                        LOGGER.info("Received admin message: " + msg);
-                        sendToQQGroups(msg);
-                    }
+            @Override
+            public void onDiscussMessage(final DiscussMessage message) {
+            }
+        });
 
-                    @Override
-                    public void onGroupMessage(final GroupMessage message) {
-                        final long groupId = message.getGroupId();
+        // Load groups
+        final List<Group> groups = xiaoV.getGroupList();
+        for (final Group group : groups) {
+            QQ_GROUPS.put(group.getId(), group);
 
-                        if (QQ_GROUPS.isEmpty()) {
-                            return;
-                        }
+            LOGGER.info(group.getName() + ": " + group.getId());
+        }
 
-                        final String content = message.getContent();
-                        final String userName = Long.toHexString(message.getUserId());
+        LOGGER.info("小薇初始化完毕，下面初始化小薇的守护（细节请看：https://github.com/b3log/xiaov/issues/3）");
 
-                        // Push to forum
-                        String qqMsg = content.replaceAll("\\[\"face\",[0-9]+\\]", "");
-                        if (StringUtils.isNotBlank(qqMsg)) {
-                            qqMsg = "<p>" + qqMsg + "</p>";
-                            sendToForum(qqMsg, userName);
-                        }
-                        String msg = "";
-                        if (StringUtils.contains(content, XiaoVs.getString("qq.bot.name"))
-                                || (StringUtils.length(content) > 6
-                                && (StringUtils.contains(content, "?") || StringUtils.contains(content, "？") || StringUtils.contains(content, "问")))) {
-                            msg = answer(content, userName);
-                        }
+        xiaoVListener = new SmartQQClient(new MessageCallback() {
+            @Override
+            public void onMessage(final Message message) {
+            }
 
-                        if (StringUtils.isNotBlank(msg)) {
-                            sendMessageToGroup(groupId, msg);
-                        }
-                    }
-
-                    private String answer(final String content, final String userName) {
-                        String keyword = "";
-                        String[] keywords = StringUtils.split(XiaoVs.getString("bot.follow.keywords"), ",");
-                        keywords = Strings.trimAll(keywords);
-                        for (final String kw : keywords) {
-                            if (StringUtils.containsIgnoreCase(content, kw)) {
-                                keyword = kw;
-
-                                break;
-                            }
-                        }
-
-                        String ret = "";
-                        if (StringUtils.isNotBlank(keyword)) {
-                            try {
-                                ret = XiaoVs.getString("bot.follow.keywordAnswer");
-                                ret = StringUtils.replace(ret, "{keyword}",
-                                        URLEncoder.encode(keyword, "UTF-8"));
-                            } catch (final UnsupportedEncodingException e) {
-                                LOGGER.log(Level.ERROR, "Search key encoding failed", e);
-                            }
-                        } else if (StringUtils.contains(content, XiaoVs.QQ_BOT_NAME)) {
-                            if (1 == QQ_BOT_TYPE) {
-                                ret = turingQueryService.chat(userName, content);
-                            } else if (2 == QQ_BOT_TYPE) {
-                                ret = baiduQueryService.chat(content);
-                            }
-                        }
-
-                        return ret;
-                    }
-
-                    @Override
-                    public void onDiscussMessage(final DiscussMessage message) {
-                    }
-                });
-
-                // Load groups
-                final List<Group> groups = qqClient.getGroupList();
-                for (final Group group : groups) {
-                    QQ_GROUPS.put(group.getId(), group);
-
-                    LOGGER.info(group.getName() + ": " + group.getId());
+            @Override
+            public void onGroupMessage(final GroupMessage message) {
+                final String content = message.getContent();
+                if (GROUP_SENT_MSGS.contains(content)) { // indicates message received
+                    GROUP_SENT_MSGS.remove(content);
                 }
             }
-        }).start();
+
+            @Override
+            public void onDiscussMessage(final DiscussMessage message) {
+            }
+        });
+
+        LOGGER.info("小薇和小薇的守护初始化完毕！");
     }
 
     private void sendToForum(final String msg, final String user) {
@@ -218,12 +184,12 @@ public class QQService {
      * Closes QQ client.
      */
     public void closeQQClient() {
-        if (null == qqClient) {
+        if (null == xiaoV) {
             return;
         }
 
         try {
-            qqClient.close();
+            xiaoV.close();
         } catch (final Exception e) {
             LOGGER.log(Level.ERROR, "Closes QQ client failed", e);
         }
@@ -264,7 +230,7 @@ public class QQService {
         if (null == group) {
             // Reload groups
 
-            final List<Group> groups = qqClient.getGroupList();
+            final List<Group> groups = xiaoV.getGroupList();
             QQ_GROUPS.clear();
 
             for (final Group g : groups) {
@@ -275,6 +241,99 @@ public class QQService {
         }
 
         LOGGER.info("Pushing [msg=" + msg + "] to QQ qun [" + group.getName() + "]");
-        qqClient.sendMessageToGroup(groupId, msg);
+        xiaoV.sendMessageToGroup(groupId, msg);
+
+        GROUP_SENT_MSGS.add(msg);
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                final int maxRetries = 2;
+                int retries = 0;
+                while (retries < maxRetries) {
+                    retries++;
+
+                    try {
+                        Thread.sleep(3000);
+                    } catch (final Exception e) {
+                        continue;
+                    }
+
+                    if (GROUP_SENT_MSGS.contains(msg)) {
+                        xiaoV.sendMessageToGroup(groupId, msg);
+                    }
+                }
+            }
+        }).start();
+    }
+
+    private void onQQPersonalMessage(final Message message) {
+        final String content = message.getContent();
+        final String key = XiaoVs.getString("qq.bot.key");
+        if (!StringUtils.startsWith(content, key)) {
+            return;
+        }
+
+        final String msg = StringUtils.substringAfter(content, key);
+        LOGGER.info("Received admin message: " + msg);
+        sendToQQGroups(msg);
+    }
+
+    public void onQQGroupMessage(final GroupMessage message) {
+        final long groupId = message.getGroupId();
+        if (QQ_GROUPS.isEmpty()) {
+            return;
+        }
+
+        final String content = message.getContent();
+        final String userName = Long.toHexString(message.getUserId());
+        // Push to forum
+        String qqMsg = content.replaceAll("\\[\"face\",[0-9]+\\]", "");
+        if (StringUtils.isNotBlank(qqMsg)) {
+            qqMsg = "<p>" + qqMsg + "</p>";
+            sendToForum(qqMsg, userName);
+        }
+
+        String msg = "";
+        if (StringUtils.contains(content, XiaoVs.getString("qq.bot.name"))
+                || (StringUtils.length(content) > 6
+                && (StringUtils.contains(content, "?") || StringUtils.contains(content, "？") || StringUtils.contains(content, "问")))) {
+            msg = answer(content, userName);
+        }
+
+        if (StringUtils.isNotBlank(msg)) {
+            sendMessageToGroup(groupId, msg);
+        }
+    }
+
+    private String answer(final String content, final String userName) {
+        String keyword = "";
+        String[] keywords = StringUtils.split(XiaoVs.getString("bot.follow.keywords"), ",");
+        keywords = Strings.trimAll(keywords);
+        for (final String kw : keywords) {
+            if (StringUtils.containsIgnoreCase(content, kw)) {
+                keyword = kw;
+
+                break;
+            }
+        }
+
+        String ret = "";
+        if (StringUtils.isNotBlank(keyword)) {
+            try {
+                ret = XiaoVs.getString("bot.follow.keywordAnswer");
+                ret = StringUtils.replace(ret, "{keyword}",
+                        URLEncoder.encode(keyword, "UTF-8"));
+            } catch (final UnsupportedEncodingException e) {
+                LOGGER.log(Level.ERROR, "Search key encoding failed", e);
+            }
+        } else if (StringUtils.contains(content, XiaoVs.QQ_BOT_NAME)) {
+            if (1 == QQ_BOT_TYPE) {
+                ret = turingQueryService.chat(userName, content);
+            } else if (2 == QQ_BOT_TYPE) {
+                ret = baiduQueryService.chat(content);
+            }
+        }
+
+        return ret;
     }
 }
