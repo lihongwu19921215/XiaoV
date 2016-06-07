@@ -238,6 +238,8 @@ public class QQService {
 
                 LOGGER.info(g.getName() + ": " + g.getId());
             }
+            
+            return;
         }
 
         LOGGER.info("Pushing [msg=" + msg + "] to QQ qun [" + group.getName() + "]");
