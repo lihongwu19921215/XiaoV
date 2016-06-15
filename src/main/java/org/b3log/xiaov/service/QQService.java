@@ -41,13 +41,12 @@ import com.scienjus.smartqq.model.GroupMessage;
 import com.scienjus.smartqq.model.Message;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
-import org.b3log.latke.util.CollectionUtils;
 
 /**
  * QQ service.
  *
  * @author <a href="http://88250.b3log.org">Liang Ding</a>
- * @version 1.2.0.1, Jun 6, 2016
+ * @version 1.2.0.2, Jun 15, 2016
  * @since 1.0.0
  */
 @Service
@@ -108,6 +107,8 @@ public class QQService {
      * Initializes QQ client.
      */
     public void initQQClient() {
+        LOGGER.info("开始初始化小薇");
+
         xiaoV = new SmartQQClient(new MessageCallback() {
             @Override
             public void onMessage(final Message message) {
@@ -238,7 +239,7 @@ public class QQService {
 
                 LOGGER.info(g.getName() + ": " + g.getId());
             }
-            
+
             return;
         }
 
