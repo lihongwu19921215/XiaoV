@@ -34,6 +34,10 @@ XiaoV（小薇）是一个用 Java 写的 QQ 聊天机器人 Web 服务，可以
 
 目前已经使用“小薇的守护”进行了改进，大幅度提升了消息发送的成功率。
 
+### 出现“Api返回码[103]”怎么破？
+
+先关闭小薇，然后将小薇、小薇的守护两个账号依次分别登录 [w.qq.com](http://w.qq.com) 后退出，再启动小薇，这时扫码后应该就不会 103 了。
+
 ### 为什么输出日志是乱码？
 
 是由于控制台编码造成，可以在将 src/main/resources/log4j.properties 中加入 log4j.appender.stdout.Encoding=UTF-8 来解决。
