@@ -373,7 +373,7 @@ public class QQService {
             if (1 == QQ_BOT_TYPE) {
                 ret = turingQueryService.chat(userName, content);
                 ret = StringUtils.replace(ret, "图灵机器人", "小薇机器人");
-                ret = StringUtils.replace(ret, "<br  />", "\n");
+                ret = StringUtils.replace(ret, "<br>", "\n");
             } else if (2 == QQ_BOT_TYPE) {
                 ret = baiduQueryService.chat(content);
             }
