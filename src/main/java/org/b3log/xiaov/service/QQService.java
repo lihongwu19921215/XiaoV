@@ -279,6 +279,11 @@ public class QQService {
         xiaoV.sendMessageToGroup(groupId, msg);
 
         GROUP_SENT_MSGS.add(msg);
+
+        if (GROUP_SENT_MSGS.size() > QQ_GROUPS.size() * 5) {
+            GROUP_SENT_MSGS.remove(0);
+        }
+
         new Thread(new Runnable() {
             @Override
             public void run() {
