@@ -41,8 +41,7 @@ import com.scienjus.smartqq.model.GroupMessage;
 import com.scienjus.smartqq.model.Message;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
-import java.util.Timer;
-import java.util.TimerTask;
+import org.apache.commons.lang.math.RandomUtils;
 
 /**
  * QQ service.
@@ -199,29 +198,37 @@ public class QQService {
      * @param msg the specified message
      */
     public void sendToPushQQGroups(final String msg) {
-        final String pushGroupsConf = XiaoVs.getString("qq.bot.pushGroups");
-        if (StringUtils.isBlank(pushGroupsConf)) {
-            return;
-        }
+        try {
+            final String pushGroupsConf = XiaoVs.getString("qq.bot.pushGroups");
+            if (StringUtils.isBlank(pushGroupsConf)) {
+                return;
+            }
 
-        if (StringUtils.equals(pushGroupsConf, "*")) {
-            // Push to all groups
+            if (StringUtils.equals(pushGroupsConf, "*")) {
+                // Push to all groups
+                for (final Map.Entry<Long, Group> entry : QQ_GROUPS.entrySet()) {
+                    final Group group = entry.getValue();
+
+                    xiaoV.sendMessageToGroup(group.getId(), msg); // Without retry
+
+                    Thread.sleep(3000);
+                }
+            }
+
+            // Push to the specified groups
+            final String[] groups = pushGroupsConf.split(",");
             for (final Map.Entry<Long, Group> entry : QQ_GROUPS.entrySet()) {
                 final Group group = entry.getValue();
+                final String name = group.getName();
 
-                xiaoV.sendMessageToGroup(group.getId(), msg); // Without retry
+                if (Strings.contains(name, groups)) {
+                    xiaoV.sendMessageToGroup(group.getId(), msg); // Without retry
+
+                    Thread.sleep(3000);
+                }
             }
-        }
-
-        // Push to the specified groups
-        final String[] groups = pushGroupsConf.split(",");
-        for (final Map.Entry<Long, Group> entry : QQ_GROUPS.entrySet()) {
-            final Group group = entry.getValue();
-            final String name = group.getName();
-
-            if (Strings.contains(name, groups)) {
-                xiaoV.sendMessageToGroup(group.getId(), msg); // Without retry
-            }
+        } catch (final Exception e) {
+            LOGGER.log(Level.ERROR, "Push message [" + msg + "] to groups failed", e);
         }
     }
 
@@ -304,6 +311,10 @@ public class QQService {
         }
 
         if (StringUtils.isNotBlank(msg)) {
+            if (RandomUtils.nextFloat() > 0.95) {
+                msg = msg + "\n\n小广告：加小薇（Q3082959578）和小薇的守护（Q316281008）为好友，然后将他们都邀请进群就可以开始调戏了~";
+            }
+
             sendMessageToGroup(groupId, msg);
         }
     }
@@ -332,6 +343,7 @@ public class QQService {
         } else if (StringUtils.contains(content, XiaoVs.QQ_BOT_NAME)) {
             if (1 == QQ_BOT_TYPE) {
                 ret = turingQueryService.chat(userName, content);
+                ret = ret.replaceAll("图灵机器人", "小薇机器人");
             } else if (2 == QQ_BOT_TYPE) {
                 ret = baiduQueryService.chat(content);
             }
