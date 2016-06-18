@@ -80,8 +80,12 @@ public final class XiaoVServletListener extends AbstractServletListener {
     public void contextDestroyed(final ServletContextEvent servletContextEvent) {
         super.contextDestroyed(servletContextEvent);
 
-        final QQService qqService = beanManager.getReference(QQService.class);
-        qqService.closeQQClient();
+        try {
+            final QQService qqService = beanManager.getReference(QQService.class);
+            qqService.closeQQClient();
+        } catch (final Exception e) {
+            // Ignore it
+        }
 
         LOGGER.info("Destroyed the context");
     }
