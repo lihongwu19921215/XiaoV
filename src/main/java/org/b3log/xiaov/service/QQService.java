@@ -41,12 +41,14 @@ import com.scienjus.smartqq.model.GroupMessage;
 import com.scienjus.smartqq.model.Message;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
+import java.util.Timer;
+import java.util.TimerTask;
 
 /**
  * QQ service.
  *
  * @author <a href="http://88250.b3log.org">Liang Ding</a>
- * @version 1.2.0.2, Jun 15, 2016
+ * @version 1.3.0.2, Jun 18, 2016
  * @since 1.0.0
  */
 @Service
@@ -126,12 +128,14 @@ public class QQService {
         });
 
         // Load groups
-        final List<Group> groups = xiaoV.getGroupList();
-        for (final Group group : groups) {
-            QQ_GROUPS.put(group.getId(), group);
+        final TimerTask loadGroupsTask = new TimerTask() {
+            @Override
+            public void run() {
+                reloadGroups();
+            }
+        };
 
-            LOGGER.info(group.getName() + ": " + group.getId());
-        }
+        new Timer().schedule(loadGroupsTask, 0, 1000 * 60);
 
         LOGGER.info("小薇初始化完毕，下面初始化小薇的守护（细节请看：https://github.com/b3log/xiaov/issues/3）");
 
@@ -202,18 +206,28 @@ public class QQService {
      * @param msg the specified message
      */
     public void sendToPushQQGroups(final String msg) {
-        final String defaultGroupsConf = XiaoVs.getString("qq.bot.pushGroups");
-        if (StringUtils.isBlank(defaultGroupsConf)) {
+        final String pushGroupsConf = XiaoVs.getString("qq.bot.pushGroups");
+        if (StringUtils.isBlank(pushGroupsConf)) {
             return;
         }
 
-        final String[] groups = defaultGroupsConf.split(",");
+        if (StringUtils.equals(pushGroupsConf, "*")) {
+            // Push to all groups
+            for (final Map.Entry<Long, Group> entry : QQ_GROUPS.entrySet()) {
+                final Group group = entry.getValue();
+
+                xiaoV.sendMessageToGroup(group.getId(), msg); // Without retry
+            }
+        }
+
+        // Push to the specified groups
+        final String[] groups = pushGroupsConf.split(",");
         for (final Map.Entry<Long, Group> entry : QQ_GROUPS.entrySet()) {
             final Group group = entry.getValue();
             final String name = group.getName();
 
             if (Strings.contains(name, groups)) {
-                sendMessageToGroup(group.getId(), msg);
+                xiaoV.sendMessageToGroup(group.getId(), msg); // Without retry
             }
         }
     }
@@ -227,21 +241,6 @@ public class QQService {
 
     private void sendMessageToGroup(final Long groupId, final String msg) {
         final Group group = QQ_GROUPS.get(groupId);
-
-        if (null == group) {
-            // Reload groups
-
-            final List<Group> groups = xiaoV.getGroupList();
-            QQ_GROUPS.clear();
-
-            for (final Group g : groups) {
-                QQ_GROUPS.put(g.getId(), g);
-
-                LOGGER.info(g.getName() + ": " + g.getId());
-            }
-
-            return;
-        }
 
         LOGGER.info("Pushing [msg=" + msg + "] to QQ qun [" + group.getName() + "]");
         xiaoV.sendMessageToGroup(groupId, msg);
@@ -338,5 +337,19 @@ public class QQService {
         }
 
         return ret;
+    }
+
+    private void reloadGroups() {
+        final List<Group> groups = xiaoV.getGroupList();
+        QQ_GROUPS.clear();
+
+        final StringBuilder msgBuilder = new StringBuilder();
+        msgBuilder.append("Reloaded groups: \n");
+        for (final Group g : groups) {
+            QQ_GROUPS.put(g.getId(), g);
+            msgBuilder.append("    ").append(g.getName()).append(": ").append(g.getId()).append("\n");
+        }
+
+        LOGGER.log(Level.INFO, msgBuilder.toString());
     }
 }

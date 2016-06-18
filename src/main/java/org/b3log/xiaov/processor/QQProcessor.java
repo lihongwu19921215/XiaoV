@@ -39,7 +39,7 @@ import org.json.JSONObject;
  * </p>
  *
  * @author <a href="http://88250.b3log.org">Liang Ding</a>
- * @version 1.0.0.0, May 29, 2016
+ * @version 1.0.0.1, Jun 18, 2016
  * @since 1.0.0
  */
 @RequestProcessor
@@ -76,6 +76,12 @@ public class QQProcessor {
 
         final String msg = request.getParameter("msg");
         if (StringUtils.isBlank(msg)) {
+            response.sendError(HttpServletResponse.SC_BAD_REQUEST);
+
+            return;
+        }
+
+        if (StringUtils.contains(msg, "http://localhost")) {
             response.sendError(HttpServletResponse.SC_BAD_REQUEST);
 
             return;
