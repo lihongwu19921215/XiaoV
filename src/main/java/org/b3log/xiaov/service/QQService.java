@@ -241,7 +241,7 @@ public class QQService {
         }
 
         if (null == group) {
-            LOGGER.log(Level.ERROR, "Group list error, please report this bug to developer: https://github.com/b3log/xiaov/issues/new");
+            LOGGER.log(Level.ERROR, "Group list error [groupId=" + groupId + "], please report this bug to developer: https://github.com/b3log/xiaov/issues/new");
 
             return;
         }
