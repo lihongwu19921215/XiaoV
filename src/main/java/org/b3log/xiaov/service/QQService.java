@@ -128,14 +128,7 @@ public class QQService {
         });
 
         // Load groups
-        final TimerTask loadGroupsTask = new TimerTask() {
-            @Override
-            public void run() {
-                reloadGroups();
-            }
-        };
-
-        new Timer().schedule(loadGroupsTask, 0, 1000 * 60);
+        reloadGroups();
 
         LOGGER.info("小薇初始化完毕，下面初始化小薇的守护（细节请看：https://github.com/b3log/xiaov/issues/3）");
 
@@ -240,7 +233,18 @@ public class QQService {
     }
 
     private void sendMessageToGroup(final Long groupId, final String msg) {
-        final Group group = QQ_GROUPS.get(groupId);
+        Group group = QQ_GROUPS.get(groupId);
+        if (null == group) {
+            reloadGroups();
+
+            group = QQ_GROUPS.get(groupId);
+        }
+
+        if (null == group) {
+            LOGGER.log(Level.ERROR, "Group list error, please report this bug to developer: https://github.com/b3log/xiaov/issues/new");
+
+            return;
+        }
 
         LOGGER.info("Pushing [msg=" + msg + "] to QQ qun [" + group.getName() + "]");
         xiaoV.sendMessageToGroup(groupId, msg);
@@ -282,9 +286,6 @@ public class QQService {
 
     public void onQQGroupMessage(final GroupMessage message) {
         final long groupId = message.getGroupId();
-        if (QQ_GROUPS.isEmpty()) {
-            return;
-        }
 
         final String content = message.getContent();
         final String userName = Long.toHexString(message.getUserId());
