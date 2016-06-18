@@ -100,9 +100,31 @@ public class QQService {
     private static final int QQ_BOT_TYPE = XiaoVs.getInt("qq.bot.type");
 
     /**
+     * Advertisements.
+     */
+    private static final List<String> ADS = new ArrayList<>();
+
+    /**
      * URL fetch service.
      */
     private static final URLFetchService URL_FETCH_SVC = URLFetchServiceFactory.getURLFetchService();
+
+    /**
+     * Built-in advertisement.
+     */
+    private static final String INTRO = "我是小薇机器人，加我（Q3082959578）和我的守护（Q316281008）为好友，然后将我们都邀请进群就可以开始聊天了~\nPS：我是开源的，https://github.com/b3log/xiaov 请给我小星星！";
+
+    static {
+        String adConf = XiaoVs.getString("ads");
+        if (StringUtils.isNotBlank(adConf)) {
+            final String[] ads = adConf.split("#");
+            for (int i = 0; i < ads.length; i++) {
+                ADS.add(ads[i]);
+            }
+        }
+
+        ADS.add(INTRO);
+    }
 
     /**
      * Initializes QQ client.
@@ -283,6 +305,8 @@ public class QQService {
         final String content = message.getContent();
         final String key = XiaoVs.getString("qq.bot.key");
         if (!StringUtils.startsWith(content, key)) {
+            xiaoV.sendMessageToFriend(message.getUserId(), INTRO);
+
             return;
         }
 
@@ -312,7 +336,7 @@ public class QQService {
 
         if (StringUtils.isNotBlank(msg)) {
             if (RandomUtils.nextFloat() > 0.95) {
-                msg = msg + "\n\n小广告：加小薇（Q3082959578）和小薇的守护（Q316281008）为好友，然后将他们都邀请进群就可以开始调戏了~";
+                msg = msg + "\n\n随机小广告：" + ADS.get(RandomUtils.nextInt(ADS.size()));
             }
 
             sendMessageToGroup(groupId, msg);
@@ -344,6 +368,7 @@ public class QQService {
             if (1 == QQ_BOT_TYPE) {
                 ret = turingQueryService.chat(userName, content);
                 ret = StringUtils.replace(ret, "图灵机器人", "小薇机器人");
+                ret = StringUtils.replace(ret, "<br  />", "\n");
             } else if (2 == QQ_BOT_TYPE) {
                 ret = baiduQueryService.chat(content);
             }
