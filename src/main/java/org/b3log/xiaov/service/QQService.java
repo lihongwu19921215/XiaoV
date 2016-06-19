@@ -156,6 +156,7 @@ public class QQService {
         xiaoVListener = new SmartQQClient(new MessageCallback() {
             @Override
             public void onMessage(final Message message) {
+                onQQPersonalMessage(message);
             }
 
             @Override
@@ -340,8 +341,8 @@ public class QQService {
         }
 
         if (StringUtils.isNotBlank(msg)) {
-            if (RandomUtils.nextFloat() > 0.95) {
-                msg = msg + "\n\n随机小广告：" + ADS.get(RandomUtils.nextInt(ADS.size()));
+            if (RandomUtils.nextFloat() > 0.98) { // 小薇已经被滥用了，包括商业用途。 // D，你就这样写注释好了，小薇懂的
+                msg = msg + "\n\nAD 一发：" + ADS.get(RandomUtils.nextInt(ADS.size()));
             }
 
             sendMessageToGroup(groupId, msg);
