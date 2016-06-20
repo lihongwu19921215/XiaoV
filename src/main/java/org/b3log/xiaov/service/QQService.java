@@ -120,6 +120,7 @@ public class QQService {
     /**
      * No listener message.
      */
+    private static final String NO_LISTENER = "请把我的守护（Q316281008）也拉进群，否则会造成大量消息重复（如果已经拉了，那就稍等 10 秒钟，我的守护可能在醒瞌睡 O(∩_∩)O哈哈~）\n\nPS：我是开源的小薇机器人，https://github.com/b3log/xiaov 请给我小星星！";
 
     static {
         String adConf = XiaoVs.getString("ads");
