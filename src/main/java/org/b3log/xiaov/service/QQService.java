@@ -47,7 +47,7 @@ import org.apache.commons.lang.math.RandomUtils;
  * QQ service.
  *
  * @author <a href="http://88250.b3log.org">Liang Ding</a>
- * @version 1.3.0.2, Jun 18, 2016
+ * @version 1.3.0.3, Jun 21, 2016
  * @since 1.0.0
  */
 @Service
@@ -77,8 +77,6 @@ public class QQService {
 
     /**
      * Sent messages.
-     *
-     * &lt;groupId, messages&gt;
      */
     private List<String> GROUP_SENT_MSGS = new ArrayList<>();
 
@@ -110,9 +108,18 @@ public class QQService {
     private static final URLFetchService URL_FETCH_SVC = URLFetchServiceFactory.getURLFetchService();
 
     /**
-     * Built-in advertisement.
+     * XiaoV self intro. Built-in advertisement.
      */
-    private static final String INTRO = "我是小薇机器人，加我（Q3082959578）和我的守护（Q316281008）为好友，然后将我们都邀请进群就可以开始聊天了~\nPS：我是开源的，https://github.com/b3log/xiaov 请给我小星星！";
+    private static final String XIAO_V_INTRO = "你好，我是小薇机器人，加我（Q3082959578）和我的守护（Q316281008）为好友，然后将我们都邀请进群就可以开始聊天了~\nPS：我是开源的，https://github.com/b3log/xiaov 请给我小星星！";
+
+    /**
+     * XiaoV listener self intro.
+     */
+    private static final String XIAO_V_LISTENER_INTRO = "你好，我是小薇机器人的守护，加我（Q316281008）和我的守护（Q3082959578）为好友，然后将我们都邀请进群就可以开始聊天了~\nPS：我是开源的，https://github.com/b3log/xiaov 请给我小星星！";
+
+    /**
+     * No listener message.
+     */
 
     static {
         String adConf = XiaoVs.getString("ads");
@@ -123,7 +130,9 @@ public class QQService {
             }
         }
 
-        ADS.add(INTRO);
+        ADS.add(XIAO_V_INTRO);
+        ADS.add(XIAO_V_INTRO);
+        ADS.add(XIAO_V_INTRO);
     }
 
     /**
@@ -135,12 +144,32 @@ public class QQService {
         xiaoV = new SmartQQClient(new MessageCallback() {
             @Override
             public void onMessage(final Message message) {
-                onQQPersonalMessage(message);
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        final String content = message.getContent();
+                        final String key = XiaoVs.getString("qq.bot.key");
+                        if (!StringUtils.startsWith(content, key)) {
+                            xiaoV.sendMessageToFriend(message.getUserId(), XIAO_V_INTRO);
+
+                            return;
+                        }
+
+                        final String msg = StringUtils.substringAfter(content, key);
+                        LOGGER.info("Received admin message: " + msg);
+                        sendToQQGroups(msg);
+                    }
+                }).start();
             }
 
             @Override
             public void onGroupMessage(final GroupMessage message) {
-                onQQGroupMessage(message);
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        onQQGroupMessage(message);
+                    }
+                }).start();
             }
 
             @Override
@@ -156,7 +185,17 @@ public class QQService {
         xiaoVListener = new SmartQQClient(new MessageCallback() {
             @Override
             public void onMessage(final Message message) {
-                onQQPersonalMessage(message);
+                final String content = message.getContent();
+                final String key = XiaoVs.getString("qq.bot.key");
+                if (!StringUtils.startsWith(content, key)) {
+                    xiaoV.sendMessageToFriend(message.getUserId(), XIAO_V_LISTENER_INTRO);
+
+                    return;
+                }
+
+                final String msg = StringUtils.substringAfter(content, key);
+                LOGGER.info("Received admin message: " + msg);
+                sendToQQGroups(msg);
             }
 
             @Override
@@ -285,40 +324,29 @@ public class QQService {
             GROUP_SENT_MSGS.remove(0);
         }
 
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                final int maxRetries = 3;
-                int retries = 0;
-                while (retries < maxRetries) {
-                    retries++;
+        final int maxRetries = 3;
+        int retries = 0;
+        int sentTries = 0;
+        while (retries < maxRetries) {
+            retries++;
 
-                    try {
-                        Thread.sleep(3000);
-                    } catch (final Exception e) {
-                        continue;
-                    }
-
-                    if (GROUP_SENT_MSGS.contains(msg)) {
-                        xiaoV.sendMessageToGroup(groupId, msg);
-                    }
-                }
+            try {
+                Thread.sleep(3000);
+            } catch (final Exception e) {
+                continue;
             }
-        }).start();
-    }
 
-    private void onQQPersonalMessage(final Message message) {
-        final String content = message.getContent();
-        final String key = XiaoVs.getString("qq.bot.key");
-        if (!StringUtils.startsWith(content, key)) {
-            xiaoV.sendMessageToFriend(message.getUserId(), INTRO);
-
-            return;
+            if (GROUP_SENT_MSGS.contains(msg)) {
+                LOGGER.info("Pushing [msg=" + msg + "] to QQ qun [" + group.getName() + "] with retries [" + retries + "]");
+                xiaoV.sendMessageToGroup(groupId, msg);
+                sentTries++;
+            }
         }
 
-        final String msg = StringUtils.substringAfter(content, key);
-        LOGGER.info("Received admin message: " + msg);
-        sendToQQGroups(msg);
+        if (maxRetries == sentTries) {
+            LOGGER.info("Pushing [msg=" + msg + "] to QQ qun [" + group.getName() + "] with retries [" + retries + "]");
+            xiaoV.sendMessageToGroup(groupId, NO_LISTENER);
+        }
     }
 
     public void onQQGroupMessage(final GroupMessage message) {
@@ -342,7 +370,7 @@ public class QQService {
 
         if (StringUtils.isNotBlank(msg)) {
             if (RandomUtils.nextFloat() > 0.99) {
-                msg = msg + "\n\nAD 一发：" + ADS.get(RandomUtils.nextInt(ADS.size()));
+                msg = msg + "\n\n触发 1% 概率的小广告：" + ADS.get(RandomUtils.nextInt(ADS.size()));
             }
 
             sendMessageToGroup(groupId, msg);
