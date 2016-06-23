@@ -43,6 +43,11 @@ XiaoV（小薇）是一个用 Java 写的 QQ 聊天机器人 Web 服务，可以
 
 是由于控制台编码造成，可以在将 src/main/resources/log4j.properties 中加入 log4j.appender.stdout.Encoding=UTF-8 来解决。
 
+### 发现问题该怎么反馈？
+
+* [论坛发帖](https://hacpai.com/tag/%E5%B0%8F%E8%96%87)（推荐做法）
+* [New Issue](https://github.com/b3log/xiaov/issues/new) 
+
 ## 启动
 
 1. 安装好 Java 1.7+、Maven 2+
