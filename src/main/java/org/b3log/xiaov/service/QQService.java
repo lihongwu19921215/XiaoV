@@ -47,7 +47,7 @@ import org.apache.commons.lang.math.RandomUtils;
  * QQ service.
  *
  * @author <a href="http://88250.b3log.org">Liang Ding</a>
- * @version 1.3.0.3, Jun 21, 2016
+ * @version 1.3.1.3, Jun 24, 2016
  * @since 1.0.0
  */
 @Service
@@ -115,7 +115,7 @@ public class QQService {
     /**
      * XiaoV listener self intro.
      */
-    private static final String XIAO_V_LISTENER_INTRO = "你好，我是小薇机器人的守护，加我（Q316281008）和我的守护（Q3082959578）为好友，然后将我们都邀请进群就可以开始聊天了~\nPS：我是开源的，https://github.com/b3log/xiaov 请给我小星星！";
+    private static final String XIAO_V_LISTENER_INTRO = "你好，我是小薇机器人的守护，加我（Q316281008）和小薇机器人（Q3082959578）为好友，然后将我们都邀请进群就可以开始聊天了~\nPS：我是开源的，https://github.com/b3log/xiaov 请给我小星星！";
 
     /**
      * No listener message.
@@ -370,8 +370,8 @@ public class QQService {
         }
 
         if (StringUtils.isNotBlank(msg)) {
-            if (RandomUtils.nextFloat() > 0.99) {
-                msg = msg + "\n\n触发 1% 概率的小广告：" + ADS.get(RandomUtils.nextInt(ADS.size()));
+            if (RandomUtils.nextFloat() >= 0.99) {
+                msg = msg + "\n\n" + ADS.get(RandomUtils.nextInt(ADS.size()));
             }
 
             sendMessageToGroup(groupId, msg);
