@@ -2,7 +2,7 @@
 
 ## 简介
 
-XiaoV（小薇）是一个用 Java 写的 QQ 聊天机器人 Web 服务，可以用于社群互动：
+[XiaoV](https://github.com/b3log/xiaov)（小薇）是一个用 Java 写的 QQ 聊天机器人 Web 服务，可以用于社群互动：
 
 * 监听多个 QQ 群消息，发现有“感兴趣”的内容时通过[图灵机器人](http://www.tuling123.com)或百度机器人进行智能回复
 * 监听到的 QQ 群消息可以配置推送到论坛某个接口上，以实现论坛弹幕或者动态聚合效果，请看[实例](https://hacpai.com/community)
