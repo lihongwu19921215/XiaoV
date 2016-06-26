@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
     Description: XiaoV POM.
-    Version: 1.0.0.2, Jun 12, 2016
+    Version: 1.0.0.3, Jun 26, 2016
     Author: Liang Ding
 -->
 <project xmlns="http://maven.apache.org/POM/4.0.0"
@@ -11,7 +11,7 @@
     <groupId>org.b3log</groupId>
     <artifactId>xiaov</artifactId>
     <packaging>war</packaging>
-    <version>1.0.0</version>
+    <version>1.0.1</version>
     <name>XiaoV</name>
     <url>https://github.com/b3log/xiaov</url>
     <description>
