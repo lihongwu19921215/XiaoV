@@ -385,8 +385,12 @@ public class QQService {
         if (StringUtils.isNotBlank(msg)) {
             if (RandomUtils.nextFloat() >= 0.9) {
                 final Long latestAdTime = GROUP_AD_TIME.get(groupId);
-                if (System.currentTimeMillis() - latestAdTime > 1000 * 60 * 30) {
+                final long now = System.currentTimeMillis();
+
+                if (now - latestAdTime > 1000 * 60 * 30) {
                     msg = msg + "\n\n" + ADS.get(RandomUtils.nextInt(ADS.size()));
+
+                    GROUP_AD_TIME.put(groupId, now);
                 }
             }
 
