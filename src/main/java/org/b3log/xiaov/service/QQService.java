@@ -47,7 +47,7 @@ import org.apache.commons.lang.math.RandomUtils;
  * QQ service.
  *
  * @author <a href="http://88250.b3log.org">Liang Ding</a>
- * @version 1.3.1.3, Jun 24, 2016
+ * @version 1.3.1.4, Jun 26, 2016
  * @since 1.0.0
  */
 @Service
@@ -64,6 +64,13 @@ public class QQService {
      * &lt;groupId, group&gt;
      */
     private final Map<Long, Group> QQ_GROUPS = new HashMap<>();
+
+    /**
+     * The latest group ad time.
+     *
+     * &lt;groupId, time&gt;
+     */
+    private final Map<Long, Long> GROUP_AD_TIME = new HashMap<>();
 
     /**
      * QQ client.
@@ -168,7 +175,13 @@ public class QQService {
                 new Thread(new Runnable() {
                     @Override
                     public void run() {
-                        onQQGroupMessage(message);
+                        try {
+                            Thread.sleep(RandomUtils.nextInt(2) * 1000);
+
+                            onQQGroupMessage(message);
+                        } catch (final Exception e) {
+                            LOGGER.log(Level.ERROR, "XiaoV on group message error", e);
+                        }
                     }
                 }).start();
             }
@@ -370,8 +383,11 @@ public class QQService {
         }
 
         if (StringUtils.isNotBlank(msg)) {
-            if (RandomUtils.nextFloat() >= 0.99) {
-                msg = msg + "\n\n" + ADS.get(RandomUtils.nextInt(ADS.size()));
+            if (RandomUtils.nextFloat() >= 0.9) {
+                final Long latestAdTime = GROUP_AD_TIME.get(groupId);
+                if (System.currentTimeMillis() - latestAdTime > 1000 * 60 * 30) {
+                    msg = msg + "\n\n" + ADS.get(RandomUtils.nextInt(ADS.size()));
+                }
             }
 
             sendMessageToGroup(groupId, msg);
@@ -415,11 +431,14 @@ public class QQService {
     private void reloadGroups() {
         final List<Group> groups = xiaoV.getGroupList();
         QQ_GROUPS.clear();
+        GROUP_AD_TIME.clear();
 
         final StringBuilder msgBuilder = new StringBuilder();
         msgBuilder.append("Reloaded groups: \n");
         for (final Group g : groups) {
             QQ_GROUPS.put(g.getId(), g);
+            GROUP_AD_TIME.put(g.getId(), 0L);
+
             msgBuilder.append("    ").append(g.getName()).append(": ").append(g.getId()).append("\n");
         }
 
