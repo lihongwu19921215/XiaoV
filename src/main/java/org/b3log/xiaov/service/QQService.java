@@ -117,17 +117,17 @@ public class QQService {
     /**
      * XiaoV self intro. Built-in advertisement.
      */
-    private static final String XIAO_V_INTRO = "你好，我是小薇机器人，加我（Q3082959578）和我的守护（Q316281008）为好友，然后将我们都邀请进群就可以开始聊天了~\nPS：我是开源的，https://github.com/b3log/xiaov 请给我小星星！";
+    private static final String XIAO_V_INTRO = "你好，我是小薇机器人，加我（Q3082959578）和我的守护（Q316281008）为好友，然后将我们都邀请进群就可以开始聊天了~\nPS：使用问题请看帖 https://hacpai.com/article/1467011936362";
 
     /**
      * XiaoV listener self intro.
      */
-    private static final String XIAO_V_LISTENER_INTRO = "你好，我是小薇机器人的守护，加我（Q316281008）和小薇机器人（Q3082959578）为好友，然后将我们都邀请进群就可以开始聊天了~\nPS：我是开源的，https://github.com/b3log/xiaov 请给我小星星！";
+    private static final String XIAO_V_LISTENER_INTRO = "你好，我是小薇机器人的守护，加我（Q316281008）和小薇机器人（Q3082959578）为好友，然后将我们都邀请进群就可以开始聊天了~\nPS：使用问题请看帖 https://hacpai.com/article/1467011936362";
 
     /**
      * No listener message.
      */
-    private static final String NO_LISTENER = "请把我的守护（Q316281008）也拉进群，否则会造成大量消息重复（如果已经拉了，那就稍等 10 秒钟，我的守护可能在醒瞌睡 O(∩_∩)O哈哈~）\n\nPS：我是开源的小薇机器人，https://github.com/b3log/xiaov 请给我小星星！";
+    private static final String NO_LISTENER = "请把我的守护（Q316281008）也拉进群，否则会造成大量消息重复（如果已经拉了，那就稍等 10 秒钟，我的守护可能在醒瞌睡 O(∩_∩)O哈哈~）\n\nPS：使用问题请看帖 https://hacpai.com/article/1467011936362";
 
     static {
         String adConf = XiaoVs.getString("ads");
@@ -295,8 +295,10 @@ public class QQService {
 
                     xiaoV.sendMessageToGroup(group.getId(), msg); // Without retry
 
-                    Thread.sleep(3000);
+                    Thread.sleep(1000 * 10);
                 }
+
+                return;
             }
 
             // Push to the specified groups
@@ -308,7 +310,7 @@ public class QQService {
                 if (Strings.contains(name, groups)) {
                     xiaoV.sendMessageToGroup(group.getId(), msg); // Without retry
 
-                    Thread.sleep(3000);
+                    Thread.sleep(1000 * 10);
                 }
             }
         } catch (final Exception e) {
