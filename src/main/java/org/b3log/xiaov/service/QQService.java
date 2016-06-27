@@ -355,7 +355,7 @@ public class QQService {
             retries++;
 
             try {
-                Thread.sleep(3000);
+                Thread.sleep(3500);
             } catch (final Exception e) {
                 continue;
             }
