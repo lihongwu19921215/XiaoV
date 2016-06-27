@@ -390,6 +390,10 @@ public class QQService {
             msg = answer(content, userName);
         }
 
+        if (StringUtils.isBlank(msg)) {
+            return;
+        }
+
         if (RandomUtils.nextFloat() >= 0.9) {
             final Long latestAdTime = GROUP_AD_TIME.get(groupId);
             final long now = System.currentTimeMillis();
