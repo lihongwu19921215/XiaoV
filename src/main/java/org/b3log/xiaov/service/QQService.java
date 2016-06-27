@@ -47,7 +47,7 @@ import org.apache.commons.lang.math.RandomUtils;
  * QQ service.
  *
  * @author <a href="http://88250.b3log.org">Liang Ding</a>
- * @version 1.3.1.4, Jun 26, 2016
+ * @version 1.3.1.5, Jun 27, 2016
  * @since 1.0.0
  */
 @Service
@@ -155,17 +155,25 @@ public class QQService {
                 new Thread(new Runnable() {
                     @Override
                     public void run() {
-                        final String content = message.getContent();
-                        final String key = XiaoVs.getString("qq.bot.key");
-                        if (!StringUtils.startsWith(content, key)) {
-                            xiaoV.sendMessageToFriend(message.getUserId(), XIAO_V_INTRO);
+                        try {
+                            Thread.sleep(500 + RandomUtils.nextInt(2) * 1000);
 
-                            return;
+                            final String content = message.getContent();
+                            final String key = XiaoVs.getString("qq.bot.key");
+                            if (!StringUtils.startsWith(content, key)) {
+                                xiaoV.sendMessageToFriend(message.getUserId(), XIAO_V_INTRO);
+
+                                return;
+                            }
+
+                            final String msg = StringUtils.substringAfter(content, key);
+                            LOGGER.info("Received admin message: " + msg);
+                            sendToQQGroups(msg);
+
+                            Thread.sleep(1000 * 10);
+                        } catch (final Exception e) {
+                            LOGGER.log(Level.ERROR, "XiaoV on group message error", e);
                         }
-
-                        final String msg = StringUtils.substringAfter(content, key);
-                        LOGGER.info("Received admin message: " + msg);
-                        sendToQQGroups(msg);
                     }
                 }).start();
             }
@@ -176,7 +184,7 @@ public class QQService {
                     @Override
                     public void run() {
                         try {
-                            Thread.sleep(RandomUtils.nextInt(2) * 1000);
+                            Thread.sleep(500 + RandomUtils.nextInt(2) * 1000);
 
                             onQQGroupMessage(message);
                         } catch (final Exception e) {
@@ -382,20 +390,18 @@ public class QQService {
             msg = answer(content, userName);
         }
 
-        if (StringUtils.isNotBlank(msg)) {
-            if (RandomUtils.nextFloat() >= 0.9) {
-                final Long latestAdTime = GROUP_AD_TIME.get(groupId);
-                final long now = System.currentTimeMillis();
+        if (RandomUtils.nextFloat() >= 0.9) {
+            final Long latestAdTime = GROUP_AD_TIME.get(groupId);
+            final long now = System.currentTimeMillis();
 
-                if (now - latestAdTime > 1000 * 60 * 30) {
-                    msg = msg + "\n\n" + ADS.get(RandomUtils.nextInt(ADS.size()));
+            if (now - latestAdTime > 1000 * 60 * 30) {
+                msg = msg + "\n\n" + ADS.get(RandomUtils.nextInt(ADS.size()));
 
-                    GROUP_AD_TIME.put(groupId, now);
-                }
+                GROUP_AD_TIME.put(groupId, now);
             }
-
-            sendMessageToGroup(groupId, msg);
         }
+
+        sendMessageToGroup(groupId, msg);
     }
 
     private String answer(final String content, final String userName) {
@@ -427,6 +433,10 @@ public class QQService {
             } else if (2 == QQ_BOT_TYPE) {
                 ret = baiduQueryService.chat(content);
             }
+        }
+
+        if (StringUtils.isBlank(ret)) {
+            ret = "嗯~";
         }
 
         return ret;
