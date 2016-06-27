@@ -439,10 +439,10 @@ public class QQService {
             } else if (2 == QQ_BOT_TYPE) {
                 ret = baiduQueryService.chat(content);
             }
-        }
 
-        if (StringUtils.isBlank(ret)) {
-            ret = "嗯~";
+            if (StringUtils.isBlank(ret)) {
+                ret = "嗯~";
+            }
         }
 
         return ret;
