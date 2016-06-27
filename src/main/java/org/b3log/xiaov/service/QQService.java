@@ -368,7 +368,7 @@ public class QQService {
         }
 
         if (maxRetries == sentTries) {
-            LOGGER.info("Pushing [msg=" + msg + "] to QQ qun [" + group.getName() + "] with retries [" + retries + "]");
+            LOGGER.info("Pushing [msg=" + msg + "] to QQ qun [" + group.getName() + "]");
             xiaoV.sendMessageToGroup(groupId, NO_LISTENER);
         }
     }
