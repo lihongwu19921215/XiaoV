@@ -47,7 +47,7 @@ import org.apache.commons.lang.math.RandomUtils;
  * QQ service.
  *
  * @author <a href="http://88250.b3log.org">Liang Ding</a>
- * @version 1.3.1.5, Jun 27, 2016
+ * @version 1.3.2.5, Jun 28, 2016
  * @since 1.0.0
  */
 @Service
@@ -399,7 +399,11 @@ public class QQService {
         }
 
         if (RandomUtils.nextFloat() >= 0.9) {
-            final Long latestAdTime = GROUP_AD_TIME.get(groupId);
+            Long latestAdTime = GROUP_AD_TIME.get(groupId);
+            if (null == latestAdTime) {
+                latestAdTime = 0L;
+            }
+
             final long now = System.currentTimeMillis();
 
             if (now - latestAdTime > 1000 * 60 * 30) {
