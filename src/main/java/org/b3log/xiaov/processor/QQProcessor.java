@@ -76,12 +76,14 @@ public class QQProcessor {
 
         final String msg = request.getParameter("msg");
         if (StringUtils.isBlank(msg)) {
+            LOGGER.warn("Empty msg body");
             response.sendError(HttpServletResponse.SC_BAD_REQUEST);
 
             return;
         }
 
         if (StringUtils.contains(msg, "http://localhost") || !StringUtils.contains(msg, "https://hacpai.com")) {
+            LOGGER.warn(msg);
             response.sendError(HttpServletResponse.SC_BAD_REQUEST);
 
             return;
