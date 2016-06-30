@@ -37,17 +37,19 @@ import com.scienjus.smartqq.callback.MessageCallback;
 import com.scienjus.smartqq.client.SmartQQClient;
 import com.scienjus.smartqq.model.DiscussMessage;
 import com.scienjus.smartqq.model.Group;
+import com.scienjus.smartqq.model.GroupInfo;
 import com.scienjus.smartqq.model.GroupMessage;
 import com.scienjus.smartqq.model.Message;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import org.apache.commons.lang.math.RandomUtils;
 
 /**
  * QQ service.
  *
  * @author <a href="http://88250.b3log.org">Liang Ding</a>
- * @version 1.3.2.5, Jun 28, 2016
+ * @version 1.3.2.6, Jun 30, 2016
  * @since 1.0.0
  */
 @Service
@@ -85,7 +87,7 @@ public class QQService {
     /**
      * Sent messages.
      */
-    private List<String> GROUP_SENT_MSGS = new ArrayList<>();
+    private final List<String> GROUP_SENT_MSGS = new ArrayList<>();
 
     /**
      * Turing query service.
@@ -133,9 +135,7 @@ public class QQService {
         String adConf = XiaoVs.getString("ads");
         if (StringUtils.isNotBlank(adConf)) {
             final String[] ads = adConf.split("#");
-            for (int i = 0; i < ads.length; i++) {
-                ADS.add(ads[i]);
-            }
+            ADS.addAll(Arrays.asList(ads));
         }
 
         ADS.add(XIAO_V_INTRO);
@@ -293,6 +293,13 @@ public class QQService {
                 for (final Map.Entry<Long, Group> entry : QQ_GROUPS.entrySet()) {
                     final Group group = entry.getValue();
 
+                    final GroupInfo groupInfo = xiaoV.getGroupInfo(group.getCode());
+                    final int userCount = groupInfo.getUsers().size();
+                    if (userCount < 100) {
+                        continue;
+                    }
+
+                    LOGGER.info("Pushing [msg=" + msg + "] to QQ qun [" + group.getName() + "]");
                     xiaoV.sendMessageToGroup(group.getId(), msg); // Without retry
 
                     Thread.sleep(1000 * 10);
@@ -308,6 +315,13 @@ public class QQService {
                 final String name = group.getName();
 
                 if (Strings.contains(name, groups)) {
+                    final GroupInfo groupInfo = xiaoV.getGroupInfo(group.getCode());
+                    final int userCount = groupInfo.getUsers().size();
+                    if (userCount < 100) {
+                        continue;
+                    }
+
+                    LOGGER.info("Pushing [msg=" + msg + "] to QQ qun [" + group.getName() + "]");
                     xiaoV.sendMessageToGroup(group.getId(), msg); // Without retry
 
                     Thread.sleep(1000 * 10);
