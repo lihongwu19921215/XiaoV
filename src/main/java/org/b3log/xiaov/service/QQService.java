@@ -17,7 +17,6 @@ package org.b3log.xiaov.service;
 
 import java.net.URL;
 import java.net.URLEncoder;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.inject.Inject;
@@ -43,6 +42,8 @@ import com.scienjus.smartqq.model.Message;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 import org.apache.commons.lang.math.RandomUtils;
 
 /**
@@ -65,14 +66,14 @@ public class QQService {
      *
      * &lt;groupId, group&gt;
      */
-    private final Map<Long, Group> QQ_GROUPS = new HashMap<>();
+    private final Map<Long, Group> QQ_GROUPS = new ConcurrentHashMap<>();
 
     /**
      * The latest group ad time.
      *
      * &lt;groupId, time&gt;
      */
-    private final Map<Long, Long> GROUP_AD_TIME = new HashMap<>();
+    private final Map<Long, Long> GROUP_AD_TIME = new ConcurrentHashMap<>();
 
     /**
      * QQ client.
@@ -87,7 +88,7 @@ public class QQService {
     /**
      * Sent messages.
      */
-    private final List<String> GROUP_SENT_MSGS = new ArrayList<>();
+    private final List<String> GROUP_SENT_MSGS = new CopyOnWriteArrayList<>();
 
     /**
      * Turing query service.
