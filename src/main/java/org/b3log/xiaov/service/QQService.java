@@ -76,6 +76,11 @@ public class QQService {
     private final Map<Long, Long> GROUP_AD_TIME = new ConcurrentHashMap<>();
 
     /**
+     * 是否启用小薇的守护来进行消息送达确认.
+     */
+    private final boolean MSG_ACK_ENABLED = XiaoVs.getBoolean("qq.bot.ack");
+
+    /**
      * QQ client.
      */
     private SmartQQClient xiaoV;
@@ -161,7 +166,8 @@ public class QQService {
 
                             final String content = message.getContent();
                             final String key = XiaoVs.getString("qq.bot.key");
-                            if (!StringUtils.startsWith(content, key)) {
+                            if (!StringUtils.startsWith(content, key)) { // 不是管理命令，只是普通的私聊
+                                // 让小薇进行自我介绍
                                 xiaoV.sendMessageToFriend(message.getUserId(), XIAO_V_INTRO);
 
                                 return;
@@ -203,38 +209,45 @@ public class QQService {
         // Load groups
         reloadGroups();
 
-        LOGGER.info("小薇初始化完毕，下面初始化小薇的守护（细节请看：https://github.com/b3log/xiaov/issues/3）");
+        LOGGER.info("小薇初始化完毕");
 
-        xiaoVListener = new SmartQQClient(new MessageCallback() {
-            @Override
-            public void onMessage(final Message message) {
-                final String content = message.getContent();
-                final String key = XiaoVs.getString("qq.bot.key");
-                if (!StringUtils.startsWith(content, key)) {
-                    xiaoV.sendMessageToFriend(message.getUserId(), XIAO_V_LISTENER_INTRO);
+        if (MSG_ACK_ENABLED) { // 如果启用了消息送达确认
+            LOGGER.info("开始初始化小薇的守护（细节请看：https://github.com/b3log/xiaov/issues/3）");
 
-                    return;
+            xiaoVListener = new SmartQQClient(new MessageCallback() {
+                @Override
+                public void onMessage(final Message message) {
+                    final String content = message.getContent();
+                    final String key = XiaoVs.getString("qq.bot.key");
+                    if (!StringUtils.startsWith(content, key)) { // 不是管理命令
+                        // 让小薇的守护进行自我介绍
+                        xiaoVListener.sendMessageToFriend(message.getUserId(), XIAO_V_LISTENER_INTRO);
+
+                        return;
+                    }
+
+                    final String msg = StringUtils.substringAfter(content, key);
+                    LOGGER.info("Received admin message: " + msg);
+                    sendToQQGroups(msg);
                 }
 
-                final String msg = StringUtils.substringAfter(content, key);
-                LOGGER.info("Received admin message: " + msg);
-                sendToQQGroups(msg);
-            }
-
-            @Override
-            public void onGroupMessage(final GroupMessage message) {
-                final String content = message.getContent();
-                if (GROUP_SENT_MSGS.contains(content)) { // indicates message received
-                    GROUP_SENT_MSGS.remove(content);
+                @Override
+                public void onGroupMessage(final GroupMessage message) {
+                    final String content = message.getContent();
+                    if (GROUP_SENT_MSGS.contains(content)) { // indicates message received
+                        GROUP_SENT_MSGS.remove(content);
+                    }
                 }
-            }
 
-            @Override
-            public void onDiscussMessage(final DiscussMessage message) {
-            }
-        });
+                @Override
+                public void onDiscussMessage(final DiscussMessage message) {
+                }
+            });
 
-        LOGGER.info("小薇和小薇的守护初始化完毕！");
+            LOGGER.info("小薇的守护初始化完毕");
+        }
+
+        LOGGER.info("小薇 QQ 机器人服务开始工作！");
     }
 
     private void sendToForum(final String msg, final String user) {
@@ -359,34 +372,38 @@ public class QQService {
         LOGGER.info("Pushing [msg=" + msg + "] to QQ qun [" + group.getName() + "]");
         xiaoV.sendMessageToGroup(groupId, msg);
 
-        GROUP_SENT_MSGS.add(msg);
+        if (MSG_ACK_ENABLED) { // 如果启用了消息送达确认
+            // 进行消息重发
 
-        if (GROUP_SENT_MSGS.size() > QQ_GROUPS.size() * 5) {
-            GROUP_SENT_MSGS.remove(0);
-        }
+            GROUP_SENT_MSGS.add(msg);
 
-        final int maxRetries = 3;
-        int retries = 0;
-        int sentTries = 0;
-        while (retries < maxRetries) {
-            retries++;
-
-            try {
-                Thread.sleep(3500);
-            } catch (final Exception e) {
-                continue;
+            if (GROUP_SENT_MSGS.size() > QQ_GROUPS.size() * 5) {
+                GROUP_SENT_MSGS.remove(0);
             }
 
-            if (GROUP_SENT_MSGS.contains(msg)) {
-                LOGGER.info("Pushing [msg=" + msg + "] to QQ qun [" + group.getName() + "] with retries [" + retries + "]");
-                xiaoV.sendMessageToGroup(groupId, msg);
-                sentTries++;
-            }
-        }
+            final int maxRetries = 3;
+            int retries = 0;
+            int sentTries = 0;
+            while (retries < maxRetries) {
+                retries++;
 
-        if (maxRetries == sentTries) {
-            LOGGER.info("Pushing [msg=" + msg + "] to QQ qun [" + group.getName() + "]");
-            xiaoV.sendMessageToGroup(groupId, NO_LISTENER);
+                try {
+                    Thread.sleep(3500);
+                } catch (final Exception e) {
+                    continue;
+                }
+
+                if (GROUP_SENT_MSGS.contains(msg)) {
+                    LOGGER.info("Pushing [msg=" + msg + "] to QQ qun [" + group.getName() + "] with retries [" + retries + "]");
+                    xiaoV.sendMessageToGroup(groupId, msg);
+                    sentTries++;
+                }
+            }
+
+            if (maxRetries == sentTries) {
+                LOGGER.info("Pushing [msg=" + msg + "] to QQ qun [" + group.getName() + "]");
+                xiaoV.sendMessageToGroup(groupId, NO_LISTENER);
+            }
         }
     }
 
