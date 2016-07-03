@@ -34,6 +34,7 @@ import org.b3log.latke.util.Strings;
 import org.b3log.xiaov.util.XiaoVs;
 import com.scienjus.smartqq.callback.MessageCallback;
 import com.scienjus.smartqq.client.SmartQQClient;
+import com.scienjus.smartqq.model.Discuss;
 import com.scienjus.smartqq.model.DiscussMessage;
 import com.scienjus.smartqq.model.Group;
 import com.scienjus.smartqq.model.GroupInfo;
@@ -50,7 +51,7 @@ import org.apache.commons.lang.math.RandomUtils;
  * QQ service.
  *
  * @author <a href="http://88250.b3log.org">Liang Ding</a>
- * @version 1.3.2.6, Jun 30, 2016
+ * @version 1.4.2.6, Jul 3, 2016
  * @since 1.0.0
  */
 @Service
@@ -76,6 +77,20 @@ public class QQService {
     private final Map<Long, Long> GROUP_AD_TIME = new ConcurrentHashMap<>();
 
     /**
+     * QQ discusses.
+     *
+     * &lt;discussId, discuss&gt;
+     */
+    private final Map<Long, Discuss> QQ_DISCUSSES = new ConcurrentHashMap<>();
+
+    /**
+     * The latest discuss ad time.
+     *
+     * &lt;discussId, time&gt;
+     */
+    private final Map<Long, Long> DISCUSS_AD_TIME = new ConcurrentHashMap<>();
+
+    /**
      * 是否启用小薇的守护来进行消息送达确认.
      */
     private final boolean MSG_ACK_ENABLED = XiaoVs.getBoolean("qq.bot.ack");
@@ -91,9 +106,14 @@ public class QQService {
     private SmartQQClient xiaoVListener;
 
     /**
-     * Sent messages.
+     * Group sent messages.
      */
     private final List<String> GROUP_SENT_MSGS = new CopyOnWriteArrayList<>();
+
+    /**
+     * Discuss sent messages.
+     */
+    private final List<String> DISCUSS_SENT_MSGS = new CopyOnWriteArrayList<>();
 
     /**
      * Turing query service.
@@ -203,11 +223,24 @@ public class QQService {
 
             @Override
             public void onDiscussMessage(final DiscussMessage message) {
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            Thread.sleep(500 + RandomUtils.nextInt(2) * 1000);
+
+                            onQQDiscussMessage(message);
+                        } catch (final Exception e) {
+                            LOGGER.log(Level.ERROR, "XiaoV on group message error", e);
+                        }
+                    }
+                }).start();
             }
         });
 
-        // Load groups
+        // Load groups & disscusses
         reloadGroups();
+        reloadDiscusses();
 
         LOGGER.info("小薇初始化完毕");
 
@@ -234,6 +267,7 @@ public class QQService {
                 @Override
                 public void onGroupMessage(final GroupMessage message) {
                     final String content = message.getContent();
+
                     if (GROUP_SENT_MSGS.contains(content)) { // indicates message received
                         GROUP_SENT_MSGS.remove(content);
                     }
@@ -241,6 +275,11 @@ public class QQService {
 
                 @Override
                 public void onDiscussMessage(final DiscussMessage message) {
+                    final String content = message.getContent();
+
+                    if (DISCUSS_SENT_MSGS.contains(content)) { // indicates message received
+                        DISCUSS_SENT_MSGS.remove(content);
+                    }
                 }
             });
 
@@ -407,6 +446,60 @@ public class QQService {
         }
     }
 
+    private void sendMessageToDiscuss(final Long discussId, final String msg) {
+        Discuss discuss = QQ_DISCUSSES.get(discussId);
+        if (null == discuss) {
+            reloadDiscusses();
+
+            discuss = QQ_DISCUSSES.get(discussId);
+        }
+
+        if (null == discuss) {
+            LOGGER.log(Level.ERROR, "Discuss list error [discussId=" + discussId + "], 请先参考项目主页 FAQ 解决"
+                    + "（https://github.com/b3log/xiaov#报错-group-list-error-groupidxxxx-please-report-this-bug-to-developer-怎么破），"
+                    + "如果还有问题，请到论坛讨论帖中进行反馈（https://hacpai.com/article/1467011936362）");
+
+            return;
+        }
+
+        LOGGER.info("Pushing [msg=" + msg + "] to QQ discuss [" + discuss.getName() + "]");
+        xiaoV.sendMessageToDiscuss(discussId, msg);
+
+        if (MSG_ACK_ENABLED) { // 如果启用了消息送达确认
+            // 进行消息重发
+
+            DISCUSS_SENT_MSGS.add(msg);
+
+            if (DISCUSS_SENT_MSGS.size() > QQ_DISCUSSES.size() * 5) {
+                DISCUSS_SENT_MSGS.remove(0);
+            }
+
+            final int maxRetries = 3;
+            int retries = 0;
+            int sentTries = 0;
+            while (retries < maxRetries) {
+                retries++;
+
+                try {
+                    Thread.sleep(3500);
+                } catch (final Exception e) {
+                    continue;
+                }
+
+                if (GROUP_SENT_MSGS.contains(msg)) {
+                    LOGGER.info("Pushing [msg=" + msg + "] to QQ discuss [" + discuss.getName() + "] with retries [" + retries + "]");
+                    xiaoV.sendMessageToDiscuss(discussId, msg);
+                    sentTries++;
+                }
+            }
+
+            if (maxRetries == sentTries) {
+                LOGGER.info("Pushing [msg=" + msg + "] to QQ discuss [" + discuss.getName() + "]");
+                xiaoV.sendMessageToDiscuss(discussId, NO_LISTENER);
+            }
+        }
+    }
+
     public void onQQGroupMessage(final GroupMessage message) {
         final long groupId = message.getGroupId();
 
@@ -439,13 +532,54 @@ public class QQService {
             final long now = System.currentTimeMillis();
 
             if (now - latestAdTime > 1000 * 60 * 30) {
-                msg = msg + "\n\n（" + ADS.get(RandomUtils.nextInt(ADS.size())) + ")";
+                msg = msg + "\n\n（" + ADS.get(RandomUtils.nextInt(ADS.size())) + "）";
 
                 GROUP_AD_TIME.put(groupId, now);
             }
         }
 
         sendMessageToGroup(groupId, msg);
+    }
+
+    public void onQQDiscussMessage(final DiscussMessage message) {
+        final long discussId = message.getDiscussId();
+
+        final String content = message.getContent();
+        final String userName = Long.toHexString(message.getUserId());
+        // Push to forum
+        String qqMsg = content.replaceAll("\\[\"face\",[0-9]+\\]", "");
+        if (StringUtils.isNotBlank(qqMsg)) {
+            qqMsg = "<p>" + qqMsg + "</p>";
+            sendToForum(qqMsg, userName);
+        }
+
+        String msg = "";
+        if (StringUtils.contains(content, XiaoVs.getString("qq.bot.name"))
+                || (StringUtils.length(content) > 6
+                && (StringUtils.contains(content, "?") || StringUtils.contains(content, "？") || StringUtils.contains(content, "问")))) {
+            msg = answer(content, userName);
+        }
+
+        if (StringUtils.isBlank(msg)) {
+            return;
+        }
+
+        if (RandomUtils.nextFloat() >= 0.9) {
+            Long latestAdTime = DISCUSS_AD_TIME.get(discussId);
+            if (null == latestAdTime) {
+                latestAdTime = 0L;
+            }
+
+            final long now = System.currentTimeMillis();
+
+            if (now - latestAdTime > 1000 * 60 * 30) {
+                msg = msg + "\n\n（" + ADS.get(RandomUtils.nextInt(ADS.size())) + "）";
+
+                DISCUSS_AD_TIME.put(discussId, now);
+            }
+        }
+
+        sendMessageToDiscuss(discussId, msg);
     }
 
     private String answer(final String content, final String userName) {
@@ -498,6 +632,23 @@ public class QQService {
             GROUP_AD_TIME.put(g.getId(), 0L);
 
             msgBuilder.append("    ").append(g.getName()).append(": ").append(g.getId()).append("\n");
+        }
+
+        LOGGER.log(Level.INFO, msgBuilder.toString());
+    }
+
+    private void reloadDiscusses() {
+        final List<Discuss> discusses = xiaoV.getDiscussList();
+        QQ_DISCUSSES.clear();
+        DISCUSS_AD_TIME.clear();
+
+        final StringBuilder msgBuilder = new StringBuilder();
+        msgBuilder.append("Reloaded discusses: \n");
+        for (final Discuss d : discusses) {
+            QQ_DISCUSSES.put(d.getId(), d);
+            DISCUSS_AD_TIME.put(d.getId(), 0L);
+
+            msgBuilder.append("    ").append(d.getName()).append(": ").append(d.getId()).append("\n");
         }
 
         LOGGER.log(Level.INFO, msgBuilder.toString());
