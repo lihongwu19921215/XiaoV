@@ -157,6 +157,11 @@ public class QQService {
      */
     private static final String NO_LISTENER = "请把我的守护（Q316281008）也拉进群，否则会造成大量消息重复（如果已经拉了，那就稍等 10 秒钟，我的守护可能在醒瞌睡 O(∩_∩)O哈哈~）\n\nPS：小薇机器人使用问题请看帖 https://hacpai.com/article/1467011936362";
 
+    /**
+     * 超过 50 个人的 Q 群才推送.
+     */
+    private static final int PUSH_GROUP_USER_COUNT = 50;
+
     static {
         String adConf = XiaoVs.getString("ads");
         if (StringUtils.isNotBlank(adConf)) {
@@ -195,8 +200,7 @@ public class QQService {
 
                             final String msg = StringUtils.substringAfter(content, key);
                             LOGGER.info("Received admin message: " + msg);
-                            sendToQQGroups(msg);
-                            sendToQQDiscusses(msg);
+                            sendToPushQQGroups(msg);
                         } catch (final Exception e) {
                             LOGGER.log(Level.ERROR, "XiaoV on group message error", e);
                         }
@@ -262,8 +266,7 @@ public class QQService {
 
                         final String msg = StringUtils.substringAfter(content, key);
                         LOGGER.info("Received admin message: " + msg);
-                        sendToQQGroups(msg);
-                        sendToQQDiscusses(msg);
+                        sendToPushQQGroups(msg);
                     } catch (final Exception e) {
                         LOGGER.log(Level.ERROR, "XiaoV on group message error", e);
                     }
@@ -347,21 +350,28 @@ public class QQService {
             }
 
             if (StringUtils.equals(pushGroupsConf, "*")) {
+                int totalUserCount = 0;
+                int groupCount = 0;
                 // Push to all groups
                 for (final Map.Entry<Long, Group> entry : QQ_GROUPS.entrySet()) {
                     final Group group = entry.getValue();
 
                     final GroupInfo groupInfo = xiaoV.getGroupInfo(group.getCode());
                     final int userCount = groupInfo.getUsers().size();
-                    if (userCount < 100) {
+                    if (userCount < PUSH_GROUP_USER_COUNT) {
                         continue;
                     }
+
+                    totalUserCount += userCount;
+                    groupCount++;
 
                     LOGGER.info("Pushing [msg=" + msg + "] to QQ qun [" + group.getName() + "]");
                     xiaoV.sendMessageToGroup(group.getId(), msg); // Without retry
 
                     Thread.sleep(1000 * 10);
                 }
+
+                LOGGER.info("一共推送了 [" + groupCount + "] 个群，覆盖 [" + totalUserCount + "] 个 QQ");
 
                 return;
             }
@@ -387,24 +397,6 @@ public class QQService {
             }
         } catch (final Exception e) {
             LOGGER.log(Level.ERROR, "Push message [" + msg + "] to groups failed", e);
-        }
-    }
-
-    private void sendToQQGroups(final String msg) throws Exception {
-        for (final Map.Entry<Long, Group> entry : QQ_GROUPS.entrySet()) {
-            final Group group = entry.getValue();
-            sendMessageToGroup(group.getId(), msg);
-
-            Thread.sleep(5 * 1000);
-        }
-    }
-
-    private void sendToQQDiscusses(final String msg) throws Exception {
-        for (final Map.Entry<Long, Discuss> entry : QQ_DISCUSSES.entrySet()) {
-            final Discuss discuss = entry.getValue();
-            sendMessageToDiscuss(discuss.getId(), msg);
-
-            Thread.sleep(5 * 1000);
         }
     }
 
