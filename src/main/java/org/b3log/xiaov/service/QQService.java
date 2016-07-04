@@ -51,7 +51,7 @@ import org.apache.commons.lang.math.RandomUtils;
  * QQ service.
  *
  * @author <a href="http://88250.b3log.org">Liang Ding</a>
- * @version 1.4.2.6, Jul 3, 2016
+ * @version 1.4.3.6, Jul 4, 2016
  * @since 1.0.0
  */
 @Service
@@ -196,8 +196,7 @@ public class QQService {
                             final String msg = StringUtils.substringAfter(content, key);
                             LOGGER.info("Received admin message: " + msg);
                             sendToQQGroups(msg);
-
-                            Thread.sleep(1000 * 10);
+                            sendToQQDiscusses(msg);
                         } catch (final Exception e) {
                             LOGGER.log(Level.ERROR, "XiaoV on group message error", e);
                         }
@@ -250,18 +249,24 @@ public class QQService {
             xiaoVListener = new SmartQQClient(new MessageCallback() {
                 @Override
                 public void onMessage(final Message message) {
-                    final String content = message.getContent();
-                    final String key = XiaoVs.getString("qq.bot.key");
-                    if (!StringUtils.startsWith(content, key)) { // 不是管理命令
-                        // 让小薇的守护进行自我介绍
-                        xiaoVListener.sendMessageToFriend(message.getUserId(), XIAO_V_LISTENER_INTRO);
+                    try {
+                        Thread.sleep(500 + RandomUtils.nextInt(1000));
+                        final String content = message.getContent();
+                        final String key = XiaoVs.getString("qq.bot.key");
+                        if (!StringUtils.startsWith(content, key)) { // 不是管理命令
+                            // 让小薇的守护进行自我介绍
+                            xiaoVListener.sendMessageToFriend(message.getUserId(), XIAO_V_LISTENER_INTRO);
 
-                        return;
+                            return;
+                        }
+
+                        final String msg = StringUtils.substringAfter(content, key);
+                        LOGGER.info("Received admin message: " + msg);
+                        sendToQQGroups(msg);
+                        sendToQQDiscusses(msg);
+                    } catch (final Exception e) {
+                        LOGGER.log(Level.ERROR, "XiaoV on group message error", e);
                     }
-
-                    final String msg = StringUtils.substringAfter(content, key);
-                    LOGGER.info("Received admin message: " + msg);
-                    sendToQQGroups(msg);
                 }
 
                 @Override
@@ -385,10 +390,21 @@ public class QQService {
         }
     }
 
-    private void sendToQQGroups(final String msg) {
+    private void sendToQQGroups(final String msg) throws Exception {
         for (final Map.Entry<Long, Group> entry : QQ_GROUPS.entrySet()) {
             final Group group = entry.getValue();
             sendMessageToGroup(group.getId(), msg);
+
+            Thread.sleep(5 * 1000);
+        }
+    }
+
+    private void sendToQQDiscusses(final String msg) throws Exception {
+        for (final Map.Entry<Long, Discuss> entry : QQ_DISCUSSES.entrySet()) {
+            final Discuss discuss = entry.getValue();
+            sendMessageToDiscuss(discuss.getId(), msg);
+
+            Thread.sleep(5 * 1000);
         }
     }
 
