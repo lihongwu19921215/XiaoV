@@ -182,7 +182,7 @@ public class QQService {
                     @Override
                     public void run() {
                         try {
-                            Thread.sleep(500 + RandomUtils.nextInt(2) * 1000);
+                            Thread.sleep(500 + RandomUtils.nextInt(1000));
 
                             final String content = message.getContent();
                             final String key = XiaoVs.getString("qq.bot.key");
@@ -211,7 +211,7 @@ public class QQService {
                     @Override
                     public void run() {
                         try {
-                            Thread.sleep(500 + RandomUtils.nextInt(2) * 1000);
+                            Thread.sleep(500 + RandomUtils.nextInt(1000));
 
                             onQQGroupMessage(message);
                         } catch (final Exception e) {
@@ -227,7 +227,7 @@ public class QQService {
                     @Override
                     public void run() {
                         try {
-                            Thread.sleep(500 + RandomUtils.nextInt(2) * 1000);
+                            Thread.sleep(500 + RandomUtils.nextInt(1000));
 
                             onQQDiscussMessage(message);
                         } catch (final Exception e) {
