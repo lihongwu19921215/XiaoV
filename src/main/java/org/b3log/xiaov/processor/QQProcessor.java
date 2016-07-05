@@ -32,14 +32,12 @@ import org.json.JSONObject;
 /**
  * QQ processor.
  *
- * <p>
  * <ul>
  * <li>Handles QQ message (/qq), GET</li>
  * </ul>
- * </p>
  *
  * @author <a href="http://88250.b3log.org">Liang Ding</a>
- * @version 1.0.0.2, Jun 28, 2016
+ * @version 1.0.0.3, Jul 5, 2016
  * @since 1.0.0
  */
 @RequestProcessor
@@ -74,7 +72,7 @@ public class QQProcessor {
             return;
         }
 
-        final String msg = request.getParameter("msg");
+        String msg = request.getParameter("msg");
         if (StringUtils.isBlank(msg)) {
             LOGGER.warn("Empty msg body");
             response.sendError(HttpServletResponse.SC_BAD_REQUEST);
@@ -93,6 +91,13 @@ public class QQProcessor {
         if (StringUtils.isBlank("user")) {
             user = "sym";
         }
+
+        final String articleTitle = StringUtils.substringBefore(msg, " https://hacpai.com");
+        final String articleLink = StringUtils.substringAfter(msg, articleTitle + " ");
+
+        LOGGER.info("Push QQ groups [articleTitle=" + articleTitle + ", articleLink=" + articleLink + "]");
+
+        msg = "【黑客派】论坛新帖预告： " + articleTitle;
 
         final JSONObject ret = new JSONObject();
         context.renderJSON(ret);
