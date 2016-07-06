@@ -72,13 +72,12 @@
 
 配置文件主要是 src/main/resources/xiaov.properties：
 
-* api.key 定义了论坛调用小薇时用于验证的口令
 * turing.api & turing.key 定义了图灵机器人的 API 地址和口令
 * baidu.cookie 定义了百度机器人访问需要的 Cookie（登录百度，然后抓包）
 * qq.bot.type 定义了机器人类型，1 是使用图灵机器人，2 则使用百度机器人
 * qq.bot.name 定义了机器人的名字，这个主要是用于识别群消息是否“感兴趣”，比如对于群消息：“小薇，你吃过饭了吗？”包含了机器人的名字，机器人就对其进行处理
-* qq.bot.key 定义了管理 QQ（加了机器人为好友的 QQ）发过来的消息群发的口令，需要消息开头是这个口令，验证过后才会群发后面的消息内容
-* qq.bot.pushGroups 定义了群发的群名，用 `,` 分隔多个群；也可以配置成 `*` 推送所有群
+* qq.bot.key 定义了管理 QQ 或论坛发过来的消息群推的口令，需要消息开头是这个口令，验证过后才会群推后面的消息内容
+* qq.bot.pushGroups 定义了群推的群名，用 `,` 分隔多个群；也可以配置成 `*` 推送所有群
 * qq.bot.ack 定义了是否启用消息送达确认机制（小薇的守护）
 * bot.follow.keywords 定义了监听群消息时的关键词，碰到这些词就做处理，比如对于群消息：“如何能在 3 天内精通 Java 呢？”包含了关键词 Java，机器人就对其进行处理
 * bot.follow.keywordAnswer 定义了监听群消息时出现了关键词后的回复模版
@@ -91,7 +90,7 @@
 * 功能：小薇提供给论坛调用的 HTTP 接口，用于将论坛的内容推送到 QQ 群
 * URL：/qq
 * Method：POST
-* Body：key={api.key}&msg={msgcontent}
+* Body：key={qq.bot.key}&msg={msgcontent}
 
 ### QQ 群推送论坛
 

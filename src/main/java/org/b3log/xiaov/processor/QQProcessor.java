@@ -65,7 +65,7 @@ public class QQProcessor {
     @RequestProcessing(value = "/qq", method = HTTPRequestMethod.POST)
     public void qq(final HTTPRequestContext context,
             final HttpServletRequest request, final HttpServletResponse response) throws Exception {
-        final String key = XiaoVs.getString("api.key");
+        final String key = XiaoVs.getString("qq.bot.key");
         if (!key.equals(request.getParameter("key"))) {
             response.sendError(HttpServletResponse.SC_FORBIDDEN);
 
