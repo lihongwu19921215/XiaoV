@@ -43,8 +43,10 @@ import com.scienjus.smartqq.model.Message;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.CopyOnWriteArraySet;
 import org.apache.commons.lang.math.RandomUtils;
 
 /**
@@ -158,9 +160,19 @@ public class QQService {
     private static final String NO_LISTENER = "请把我的守护（Q316281008）也拉进群，否则会造成大量消息重复（如果已经拉了，那就稍等 10 秒钟，我的守护可能在醒瞌睡 O(∩_∩)O哈哈~）\n\nPS：小薇机器人使用问题请看帖 https://hacpai.com/article/1467011936362";
 
     /**
-     * 超过 50 个人的 Q 群才推送.
+     * 超过 {@value #PUSH_GROUP_USER_COUNT} 个成员的群才推送.
      */
     private static final int PUSH_GROUP_USER_COUNT = 50;
+
+    /**
+     * 记录未群推过的群 id 集合.
+     */
+    private static final Set<Long> UNPUSH_GROUPS = new CopyOnWriteArraySet<>();
+
+    /**
+     * 一次群推操作最多只推送 {@value #PUSH_GROUP_COUNT} 个群（为了尽量保证成功率）.
+     */
+    private static final int PUSH_GROUP_COUNT = 5;
 
     static {
         String adConf = XiaoVs.getString("ads");
@@ -349,24 +361,44 @@ public class QQService {
                 return;
             }
 
+            // Push to all groups
             if (StringUtils.equals(pushGroupsConf, "*")) {
                 int totalUserCount = 0;
                 int groupCount = 0;
-                // Push to all groups
+
+                if (UNPUSH_GROUPS.isEmpty()) { // 如果没有可供推送的群（群都推送过了）
+                    reloadGroups();
+                }
+
                 for (final Map.Entry<Long, Group> entry : QQ_GROUPS.entrySet()) {
                     final Group group = entry.getValue();
+                    final long groupId = group.getId();
 
                     final GroupInfo groupInfo = xiaoV.getGroupInfo(group.getCode());
                     final int userCount = groupInfo.getUsers().size();
                     if (userCount < PUSH_GROUP_USER_COUNT) {
+                        // 把人不多的群过滤掉
+                        UNPUSH_GROUPS.remove(groupId);
+
                         continue;
                     }
 
-                    totalUserCount += userCount;
-                    groupCount++;
+                    if (!UNPUSH_GROUPS.contains(groupId)) {
+                        // 如果该群已经被推送过则跳过本次推送
+                        continue;
+                    }
+
+                    if (groupCount >= PUSH_GROUP_COUNT) { // 如果本次群推操作已推送群数大于设定的阈值
+                        break;
+                    }
 
                     LOGGER.info("Pushing [msg=" + msg + "] to QQ qun [" + group.getName() + "]");
-                    xiaoV.sendMessageToGroup(group.getId(), msg); // Without retry
+                    xiaoV.sendMessageToGroup(groupId, msg); // Without retry
+
+                    UNPUSH_GROUPS.remove(groupId); // 从未推送中移除（说明已经推送过）
+
+                    totalUserCount += userCount;
+                    groupCount++;
 
                     Thread.sleep(1000 * 10);
                 }
@@ -521,7 +553,7 @@ public class QQService {
         }
 
         String msg = "";
-        if (StringUtils.contains(content, XiaoVs.getString("qq.bot.name"))
+        if (StringUtils.contains(content, XiaoVs.QQ_BOT_NAME)
                 || (StringUtils.length(content) > 6
                 && (StringUtils.contains(content, "?") || StringUtils.contains(content, "？") || StringUtils.contains(content, "问")))) {
             msg = answer(content, userName);
@@ -562,7 +594,7 @@ public class QQService {
         }
 
         String msg = "";
-        if (StringUtils.contains(content, XiaoVs.getString("qq.bot.name"))
+        if (StringUtils.contains(content, XiaoVs.QQ_BOT_NAME)
                 || (StringUtils.length(content) > 6
                 && (StringUtils.contains(content, "?") || StringUtils.contains(content, "？") || StringUtils.contains(content, "问")))) {
             msg = answer(content, userName);
@@ -614,7 +646,7 @@ public class QQService {
         } else if (StringUtils.contains(content, XiaoVs.QQ_BOT_NAME)) {
             if (1 == QQ_BOT_TYPE) {
                 ret = turingQueryService.chat(userName, content);
-                ret = StringUtils.replace(ret, "图灵机器人", "小薇机器人");
+                ret = StringUtils.replace(ret, "图灵机器人", XiaoVs.QQ_BOT_NAME + "机器人");
                 ret = StringUtils.replace(ret, "<br>", "\n");
             } else if (2 == QQ_BOT_TYPE) {
                 ret = baiduQueryService.chat(content);
@@ -632,12 +664,14 @@ public class QQService {
         final List<Group> groups = xiaoV.getGroupList();
         QQ_GROUPS.clear();
         GROUP_AD_TIME.clear();
+        UNPUSH_GROUPS.clear();
 
         final StringBuilder msgBuilder = new StringBuilder();
         msgBuilder.append("Reloaded groups: \n");
         for (final Group g : groups) {
             QQ_GROUPS.put(g.getId(), g);
             GROUP_AD_TIME.put(g.getId(), 0L);
+            UNPUSH_GROUPS.add(g.getId());
 
             msgBuilder.append("    ").append(g.getName()).append(": ").append(g.getId()).append("\n");
         }
