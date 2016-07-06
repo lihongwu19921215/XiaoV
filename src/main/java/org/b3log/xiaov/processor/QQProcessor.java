@@ -39,7 +39,7 @@ import org.json.JSONObject;
  * </p>
  *
  * @author <a href="http://88250.b3log.org">Liang Ding</a>
- * @version 1.0.0.2, Jun 28, 2016
+ * @version 1.0.0.3, Jul 6, 2016
  * @since 1.0.0
  */
 @RequestProcessor
@@ -97,7 +97,8 @@ public class QQProcessor {
         final JSONObject ret = new JSONObject();
         context.renderJSON(ret);
 
-        qqService.sendToPushQQGroups(msg);
+        // 暂时不接收论坛过来的群推
+        // qqService.sendToPushQQGroups(msg);
 
         ret.put(Keys.STATUS_CODE, true);
     }
