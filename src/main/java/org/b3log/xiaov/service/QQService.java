@@ -403,10 +403,10 @@ public class QQService {
 
                         totalUserCount += userCount;
                         groupCount++;
+
+                        Thread.sleep(1000 * 10);
                     } catch (final Exception e) {
                         LOGGER.log(Level.ERROR, "群发异常", e);
-                    } finally {
-                        Thread.sleep(1000 * 10);
                     }
                 }
 
