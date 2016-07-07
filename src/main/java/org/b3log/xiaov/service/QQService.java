@@ -371,36 +371,43 @@ public class QQService {
                 }
 
                 for (final Map.Entry<Long, Group> entry : QQ_GROUPS.entrySet()) {
-                    final Group group = entry.getValue();
-                    final long groupId = group.getId();
+                    long groupId = 0;
+                    int userCount = 0;
 
-                    final GroupInfo groupInfo = xiaoV.getGroupInfo(group.getCode());
-                    final int userCount = groupInfo.getUsers().size();
-                    if (userCount < PUSH_GROUP_USER_COUNT) {
-                        // 把人不多的群过滤掉
-                        UNPUSH_GROUPS.remove(groupId);
+                    try {
+                        final Group group = entry.getValue();
+                        groupId = group.getId();
 
-                        continue;
+                        final GroupInfo groupInfo = xiaoV.getGroupInfo(group.getCode());
+                        userCount = groupInfo.getUsers().size();
+                        if (userCount < PUSH_GROUP_USER_COUNT) {
+                            // 把人不多的群过滤掉
+                            UNPUSH_GROUPS.remove(groupId);
+
+                            continue;
+                        }
+
+                        if (!UNPUSH_GROUPS.contains(groupId)) {
+                            // 如果该群已经被推送过则跳过本次推送
+                            continue;
+                        }
+
+                        if (groupCount >= PUSH_GROUP_COUNT) { // 如果本次群推操作已推送群数大于设定的阈值
+                            break;
+                        }
+
+                        LOGGER.info("群发 [" + msg + "] 到 QQ 群 [" + group.getName() + ", 成员数=" + userCount + "]");
+                        xiaoV.sendMessageToGroup(groupId, msg); // Without retry
+
+                        UNPUSH_GROUPS.remove(groupId); // 从未推送中移除（说明已经推送过）
+
+                        totalUserCount += userCount;
+                        groupCount++;
+                    } catch (final Exception e) {
+                        LOGGER.log(Level.ERROR, "群发异常", e);
+                    } finally {
+                        Thread.sleep(1000 * 10);
                     }
-
-                    if (!UNPUSH_GROUPS.contains(groupId)) {
-                        // 如果该群已经被推送过则跳过本次推送
-                        continue;
-                    }
-
-                    if (groupCount >= PUSH_GROUP_COUNT) { // 如果本次群推操作已推送群数大于设定的阈值
-                        break;
-                    }
-
-                    LOGGER.info("Pushing [msg=" + msg + "] to QQ qun [" + group.getName() + "]");
-                    xiaoV.sendMessageToGroup(groupId, msg); // Without retry
-
-                    UNPUSH_GROUPS.remove(groupId); // 从未推送中移除（说明已经推送过）
-
-                    totalUserCount += userCount;
-                    groupCount++;
-
-                    Thread.sleep(1000 * 10);
                 }
 
                 LOGGER.info("一共推送了 [" + groupCount + "] 个群，覆盖 [" + totalUserCount + "] 个 QQ");
