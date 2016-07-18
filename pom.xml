@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
     Description: XiaoV POM.
-    Version: 1.0.0.4, Jul 7, 2016
+    Version: 1.0.0.5, Jul 18, 2016
     Author: Liang Ding
 -->
 <project xmlns="http://maven.apache.org/POM/4.0.0"
@@ -240,15 +240,12 @@
         </repository>
 
         <!-- Just for SmartQQ -->        
-        <repository>
-            <id>scienjus-mvn-repo</id>
-            <url>https://raw.github.com/ScienJus/maven/snapshot/</url>
-            <snapshots>
-                <enabled>true</enabled>
-                <updatePolicy>daily</updatePolicy>
-            </snapshots>
-        </repository>
-    </repositories>
+        <repository>  
+            <id>data-local</id>  
+            <name>data</name>  
+            <url>file://${project.basedir}/src/main/resources/lib</url>  
+        </repository>  
+    </repositories>  
     
     <pluginRepositories>
         <pluginRepository>
