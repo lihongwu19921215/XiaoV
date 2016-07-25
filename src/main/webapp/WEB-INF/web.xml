@@ -18,7 +18,7 @@
 -->
 <!--
     Description: XiaoV web deployment descriptor.
-    Version: 1.0.0.0, May 29, 2016
+    Version: 1.0.1.0, Jul 25, 2016
     Author: Liang Ding
 -->
 <web-app version="3.0" xmlns="http://java.sun.com/xml/ns/javaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
@@ -59,14 +59,5 @@
         <servlet-name>DispatcherServlet</servlet-name>
         <url-pattern>/*</url-pattern>
     </servlet-mapping>
-    
-    <servlet>
-        <servlet-name>default</servlet-name>
-        <servlet-class>org.eclipse.jetty.servlet.DefaultServlet</servlet-class>
-        <init-param>
-            <param-name>useFileMappedBuffer</param-name>
-            <param-value>false</param-value>
-        </init-param>
-    </servlet>
     
 </web-app>
