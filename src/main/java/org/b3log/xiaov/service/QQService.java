@@ -53,7 +53,7 @@ import org.apache.commons.lang.math.RandomUtils;
  * QQ service.
  *
  * @author <a href="http://88250.b3log.org">Liang Ding</a>
- * @version 1.4.3.6, Jul 4, 2016
+ * @version 1.4.3.7, Jul 26, 2016
  * @since 1.0.0
  */
 @Service
@@ -654,6 +654,8 @@ public class QQService {
             if (1 == QQ_BOT_TYPE) {
                 ret = turingQueryService.chat(userName, content);
                 ret = StringUtils.replace(ret, "图灵机器人", XiaoVs.QQ_BOT_NAME + "机器人");
+                ret = StringUtils.replace(ret, "默认机器人", XiaoVs.QQ_BOT_NAME + "机器人");
+
                 ret = StringUtils.replace(ret, "<br>", "\n");
             } else if (2 == QQ_BOT_TYPE) {
                 ret = baiduQueryService.chat(content);
