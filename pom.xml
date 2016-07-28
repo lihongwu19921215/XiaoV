@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
     Description: XiaoV POM.
-    Version: 1.0.0.7, Jul 26, 2016
+    Version: 1.0.0.8, Jul 28, 2016
     Author: Liang Ding
 -->
 <project xmlns="http://maven.apache.org/POM/4.0.0"
@@ -77,6 +77,8 @@
             <groupId>other.third</groupId>
             <artifactId>dependencies</artifactId>
             <version>1.0.0</version>
+            <scope>system</scope>
+            <systemPath>${project.basedir}/src/main/resources/lib/dependencies-1.0.0.jar</systemPath>
         </dependency>
         
         <dependency>
@@ -184,13 +186,6 @@
 
         <finalName>xiaov</finalName>
     </build>
-    
-    <repositories>
-        <repository>  
-            <id>local-repo</id>  
-            <url>file://${project.basedir}/src/main/resources/lib</url>  
-        </repository>  
-    </repositories>  
     
 </project>
 
