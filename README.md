@@ -92,7 +92,7 @@
 * 功能：小薇提供给论坛调用的 HTTP 接口，用于将论坛的内容推送到 QQ 群
 * URL：/qq
 * Method：POST
-* QueryStr：key={qq.bot.key}&msg={msgcontent}
+* QueryStr：key={qq.bot.key}&msg={msgcontent}（也可以放到 Body 里面）
 * 例如：/qq?key=123456&msg=Hello
 
 ### QQ 群推送论坛
