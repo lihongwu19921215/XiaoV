@@ -162,7 +162,7 @@ public class QQService {
     /**
      * 超过 {@value #PUSH_GROUP_USER_COUNT} 个成员的群才推送.
      */
-    private static final int PUSH_GROUP_USER_COUNT = 50;
+    private static int PUSH_GROUP_USER_COUNT = XiaoVs.getInt("qq.bot.pushGroupUserCnt");
 
     /**
      * 记录未群推过的群 id 集合.

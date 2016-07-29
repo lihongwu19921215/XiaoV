@@ -37,7 +37,7 @@ import org.json.JSONObject;
  * </ul>
  *
  * @author <a href="http://88250.b3log.org">Liang Ding</a>
- * @version 1.0.0.3, Jul 6, 2016
+ * @version 1.0.1.3, Jul 29, 2016
  * @since 1.0.0
  */
 @RequestProcessor
@@ -80,31 +80,11 @@ public class QQProcessor {
             return;
         }
 
-        if (StringUtils.contains(msg, "http://localhost") || !StringUtils.contains(msg, "https://hacpai.com")) {
-            LOGGER.warn(msg);
-            response.sendError(HttpServletResponse.SC_BAD_REQUEST);
-
-            return;
-        }
-
-        String user = request.getParameter("user");
-        if (StringUtils.isBlank("user")) {
-            user = "sym";
-        }
-
-        final String articleTitle = StringUtils.substringBefore(msg, " https://hacpai.com");
-        final String articleLink = StringUtils.substringAfter(msg, articleTitle + " ");
-
-        LOGGER.info("Push QQ groups [articleTitle=" + articleTitle + ", articleLink=" + articleLink + "]");
-
-        msg = "【黑客派】论坛新帖预告： " + articleTitle;
+        LOGGER.info("Push QQ groups [msg=" + msg + "]");
+        qqService.sendToPushQQGroups(msg);
 
         final JSONObject ret = new JSONObject();
         context.renderJSON(ret);
-
-        // 暂时不接收论坛过来的群推
-        // qqService.sendToPushQQGroups(msg);
-
         ret.put(Keys.STATUS_CODE, true);
     }
 }
