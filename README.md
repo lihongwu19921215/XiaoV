@@ -80,6 +80,7 @@
 * qq.bot.name 定义了机器人的名字，这个主要是用于识别群消息是否“感兴趣”，比如对于群消息：“小薇，你吃过饭了吗？”包含了机器人的名字，机器人就对其进行处理
 * qq.bot.key 定义了管理 QQ 或论坛发过来的消息群推的口令，需要消息开头是这个口令，验证过后才会群推后面的消息内容
 * qq.bot.pushGroups 定义了群推的群名，用 `,` 分隔多个群；也可以配置成 `*` 推送所有群
+* qq.bot.pushGroupUserCnt 定义了群推时群人数的下限，只有大于等于这个人数的群才推送
 * qq.bot.ack 定义了是否启用消息送达确认机制（小薇的守护），默认不启用
 * bot.follow.keywords 定义了监听群消息时的关键词，碰到这些词就做处理，比如对于群消息：“如何能在 3 天内精通 Java 呢？”包含了关键词 Java，机器人就对其进行处理
 * bot.follow.keywordAnswer 定义了监听群消息时出现了关键词后的回复模版
@@ -92,14 +93,16 @@
 * 功能：小薇提供给论坛调用的 HTTP 接口，用于将论坛的内容推送到 QQ 群
 * URL：/qq
 * Method：POST
-* Body：key={qq.bot.key}&msg={msgcontent}
+* QueryStr：key={qq.bot.key}&msg={msgcontent}（也可以放到 Body 里面）
+* 例如：/qq?key=123456&msg=Hello
 
 ### QQ 群推送论坛
 
 * 功能：由论坛提供给小薇调用的 HTTP 接口，用于将 QQ 群消息推送到论坛（这个接口是论坛实现的，这里是给出小薇的调用方式和参数）
 * URL：{forum.api}
 * Method：POST
-* Body：key={forum.key}&msg={msgcontent}&user={hexuserid}
+* QueryStr：key={forum.key}&msg={msgcontent}&user={hexuserid}
+* 例如：/xiaov?key=123456&msg=Hello&user=0a
 
 ## 鸣谢
 
