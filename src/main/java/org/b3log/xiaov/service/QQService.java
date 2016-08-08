@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 2012-2016, b3log.org & hacpai.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -128,6 +128,12 @@ public class QQService {
      */
     @Inject
     private BaiduQueryService baiduQueryService;
+    
+    /**
+     * ITPK query service.
+     */
+    @Inject
+    private ItpkQueryService itpkQueryService;
 
     /**
      * Bot type.
@@ -659,6 +665,8 @@ public class QQService {
                 ret = StringUtils.replace(ret, "<br>", "\n");
             } else if (2 == QQ_BOT_TYPE) {
                 ret = baiduQueryService.chat(content);
+            } else if (3 == QQ_BOT_TYPE) {
+                ret = itpkQueryService.chat(content);
             }
 
             if (StringUtils.isBlank(ret)) {
