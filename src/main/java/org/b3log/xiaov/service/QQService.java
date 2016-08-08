@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Copyright (c) 2012-2016, b3log.org & hacpai.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -53,7 +53,7 @@ import org.apache.commons.lang.math.RandomUtils;
  * QQ service.
  *
  * @author <a href="http://88250.b3log.org">Liang Ding</a>
- * @version 1.4.3.7, Jul 26, 2016
+ * @version 1.4.3.8, Aug 8, 2016
  * @since 1.0.0
  */
 @Service
@@ -128,7 +128,7 @@ public class QQService {
      */
     @Inject
     private BaiduQueryService baiduQueryService;
-    
+
     /**
      * ITPK query service.
      */
