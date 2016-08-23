@@ -117,7 +117,6 @@
 * [图灵机器人](http://www.tuling123.com)：赋予了小薇抖机灵的能力
 * [百度机器人](https://baidu.com)：再次赋予了小薇抖机灵的能力
 * [茉莉机器人](http://www.itpk.cn)：再再次赋予了小薇抖机灵的能力
-* 
 * [Latke](https://github.com/b3log/latke)：简洁高效的 Java Web 框架 
 
 ----
