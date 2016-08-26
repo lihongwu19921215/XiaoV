@@ -33,11 +33,11 @@ import org.json.JSONObject;
  * QQ processor.
  *
  * <ul>
- * <li>Handles QQ message (/qq), GET</li>
+ * <li>Handles QQ message (/qq), POST</li>
  * </ul>
  *
  * @author <a href="http://88250.b3log.org">Liang Ding</a>
- * @version 1.0.1.3, Jul 29, 2016
+ * @version 1.0.2.3, Aug 26, 2016
  * @since 1.0.0
  */
 @RequestProcessor
