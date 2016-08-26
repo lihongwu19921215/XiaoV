@@ -98,7 +98,7 @@
 * 功能：小薇提供给论坛调用的 HTTP 接口，用于将论坛的内容推送到 QQ 群
 * URL：/qq
 * Method：POST
-* QueryStr：key={qq.bot.key}&msg={msgcontent}（也可以放到 Body 里面）
+* Body：key={qq.bot.key}&msg={msgcontent}
 * 例如：/qq?key=123456&msg=Hello
 
 ### QQ 群推送论坛
@@ -106,7 +106,7 @@
 * 功能：由论坛提供给小薇调用的 HTTP 接口，用于将 QQ 群消息推送到论坛（这个接口是论坛实现的，这里是给出小薇的调用方式和参数）
 * URL：{forum.api}
 * Method：POST
-* QueryStr：key={forum.key}&msg={msgcontent}&user={hexuserid}
+* Body：key={forum.key}&msg={msgcontent}&user={hexuserid}
 * 例如：/xiaov?key=123456&msg=Hello&user=0a
 
 ## 鸣谢
