@@ -61,7 +61,7 @@
 ## 启动
 
 1. 安装好 Java 1.7+、Maven 2+
-2. Clone 本项目，并在项目根目录上执行 `mvn install`（需要先配置好 maven 环境）
+2. Clone 本项目，并在项目根目录上执行 `mvn install`
 3. 使用 `mvn jetty:run` 启动，或者在 target/xiaov 目录下执行命令：
    * Windows: `java -cp WEB-INF/lib/*;WEB-INF/classes org.b3log.xiaov.Starter`
    * Unix-like: `java -cp WEB-INF/lib/*:WEB-INF/classes org.b3log.xiaov.Starter`
