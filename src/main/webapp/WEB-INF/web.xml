@@ -18,7 +18,7 @@
 -->
 <!--
     Description: XiaoV web deployment descriptor.
-    Version: 1.0.1.0, Jul 25, 2016
+    Version: 1.0.1.1, Sep 5, 2016
     Author: Liang Ding
 -->
 <web-app version="3.0" xmlns="http://java.sun.com/xml/ns/javaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
@@ -58,6 +58,26 @@
     <servlet-mapping>
         <servlet-name>DispatcherServlet</servlet-name>
         <url-pattern>/*</url-pattern>
+    </servlet-mapping>
+    
+    <servlet>
+        <servlet-name>XiaoVGetUpServlet</servlet-name>
+        <servlet-class>org.b3log.xiaov.processor.XiaoVGetUpServlet</servlet-class>
+        <load-on-startup>3</load-on-startup>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>XiaoVGetUpServlet</servlet-name>
+        <url-pattern>/getup</url-pattern>
+    </servlet-mapping>
+    
+    <servlet>
+        <servlet-name>QRCodeShowServlet</servlet-name>
+        <servlet-class>org.b3log.xiaov.processor.QRCodeShowServlet</servlet-class>
+        <load-on-startup>2</load-on-startup>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>QRCodeShowServlet</servlet-name>
+        <url-pattern>/login</url-pattern>
     </servlet-mapping>
     
 </web-app>

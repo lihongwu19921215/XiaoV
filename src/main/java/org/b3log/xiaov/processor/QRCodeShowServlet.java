@@ -35,7 +35,6 @@ import org.b3log.latke.logging.Logger;
  * @version 1.0.0.0, Aug 21, 2016
  * @since 2.1.0
  */
-@WebServlet(urlPatterns = {"/login"}, loadOnStartup = 2)
 public class QRCodeShowServlet extends HttpServlet {
 
     /**

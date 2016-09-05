@@ -31,7 +31,6 @@ import org.b3log.xiaov.service.QQService;
  * @version 1.0.0.0, Aug 21, 2016
  * @since 2.1.0
  */
-@WebServlet(urlPatterns = {"/getup"}, loadOnStartup = 3)
 public class XiaoVGetUpServlet extends HttpServlet {
 
     /**
