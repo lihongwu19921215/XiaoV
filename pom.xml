@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
     Description: XiaoV POM.
-    Version: 1.0.0.8, Jul 28, 2016
+    Version: 1.1.0.8, Sep 5, 2016
     Author: Liang Ding
 -->
 <project xmlns="http://maven.apache.org/POM/4.0.0"
@@ -11,7 +11,7 @@
     <groupId>org.b3log</groupId>
     <artifactId>xiaov</artifactId>
     <packaging>war</packaging>
-    <version>2.0.1</version>
+    <version>2.2.0</version>
     <name>XiaoV</name>
     <url>https://github.com/b3log/xiaov</url>
     <description>
@@ -21,7 +21,7 @@
 
     <!-- Properties -->
     <properties>
-        <latke.version>2.1.5</latke.version>
+        <latke.version>2.3.1</latke.version>
         
         <servlet.version>3.1.0</servlet.version>
         <jetty.version>9.2.7.v20150116</jetty.version>
@@ -74,19 +74,42 @@
 
     <dependencies>
         <dependency>
-            <groupId>other.third</groupId>
-            <artifactId>dependencies</artifactId>
-            <version>1.0.0</version>
-            <scope>system</scope>
-            <systemPath>${project.basedir}/src/main/resources/lib/dependencies-1.0.0.jar</systemPath>
+            <groupId>org.b3log</groupId>
+            <artifactId>latke</artifactId>
+            <version>${latke.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.h2database</groupId>
+                    <artifactId>h2</artifactId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>mail</artifactId>
+                    <groupId>javax.mail</groupId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.jboss</groupId>
+                    <artifactId>jboss-vfs</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
-        
+
         <dependency>
+            <groupId>org.freemarker</groupId>
+            <artifactId>freemarker</artifactId>
+            <version>2.3.23</version>
+        </dependency>
+
+        <dependency>		        
             <groupId>javax.servlet</groupId>
             <artifactId>javax.servlet-api</artifactId>
             <version>${servlet.version}</version>
-            <scope>provided</scope>
         </dependency>
+
+         <dependency>
+             <groupId>com.scienjus</groupId>
+             <artifactId>smartqq</artifactId>
+             <version>1.0-SNAPSHOT</version>
+          </dependency>
 
     </dependencies>
 
@@ -107,7 +130,7 @@
                 <version>${jetty.version}</version>
                 <configuration>
                     <httpConnector>
-                        <port>9090</port>
+                        <port>8080</port>
                     </httpConnector>
                     <stopKey>stop</stopKey>
                     <stopPort>5500</stopPort>
@@ -186,6 +209,16 @@
 
         <finalName>xiaov</finalName>
     </build>
-    
+
+    <repositories>
+        <repository>
+            <id>scienjus-mvn-repo</id>
+            <url>https://raw.github.com/ScienJus/maven/snapshot/</url>
+            <snapshots>
+                <enabled>true</enabled>
+                <updatePolicy>daily</updatePolicy>
+            </snapshots>
+        </repository>
+    </repositories>
 </project>
 
