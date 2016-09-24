@@ -15,7 +15,12 @@
  */
 package org.b3log.xiaov;
 
+import java.io.File;
 import org.b3log.latke.Latkes;
+import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.util.log.Log;
+import org.eclipse.jetty.util.log.Slf4jLog;
+import org.eclipse.jetty.webapp.WebAppContext;
 
 /**
  * XiaoV with embedded Jetty.
@@ -26,24 +31,44 @@ import org.b3log.latke.Latkes;
  * </ul>
  *
  * @author <a href="http://88250.b3log.org">Liang Ding</a>
- * @version 1.0.0.0, Sep 5, 2016
+ * @version 1.0.0.1, Sep 24, 2016
  * @since 2.2.0
  */
-public final class Starter {
+public class Starter {
 
-    /**
-     * Main.
-     *
-     * @param args the specified arguments
-     * @throws Exception if start failed
-     */
-    public static void main(final String[] args) throws Exception {
-        Latkes.boot(Starter.class, args);
+    static {
+        try {
+            Log.setLog(new Slf4jLog());
+        } catch (final Exception e) {
+            e.printStackTrace();
+        }
     }
 
-    /**
-     * Private constructor.
-     */
-    private Starter() {
+    public static void main(String[] args) throws Exception {
+        Latkes.setScanPath("org.b3log.xiaov"); // For Latke IoC
+        Latkes.initRuntimeEnv();
+
+        final String classesPath = ClassLoader.getSystemResource("").getPath(); // Real path including maven sub folder
+        String webappDirLocation = classesPath.replace("target/classes/", "src/main/webapp/"); // POM structure in dev env
+        final File file = new File(webappDirLocation);
+        if (!file.exists()) {
+            webappDirLocation = "."; // production environment
+        }
+
+        final Server server = new Server(Integer.valueOf(Latkes.getServerPort()));
+        final WebAppContext root = new WebAppContext();
+        root.setParentLoaderPriority(true); // Use parent class loader
+        root.setContextPath("/");
+        root.setDescriptor(webappDirLocation + "/WEB-INF/web.xml");
+        root.setResourceBase(webappDirLocation);
+        server.setHandler(root);
+
+        try {
+            server.start();
+        } catch (final Exception e) {
+            e.printStackTrace();
+
+            System.exit(-1);
+        }
     }
 }
