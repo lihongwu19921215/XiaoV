@@ -54,7 +54,7 @@
 
 ### 发现问题该怎么反馈？
 
-* [论坛发帖](https://hacpai.com/tag/%E5%B0%8F%E8%96%87)（推荐做法）
+* [论坛发帖](https://hacpai.com/tag/xiaov)（推荐做法）
 * [New Issue](https://github.com/b3log/xiaov/issues/new) 
 
 ## 启动
