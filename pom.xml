@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
     Description: XiaoV POM.
-    Version: 1.1.0.9, Sep 24, 2016
+    Version: 1.1.0.10, Oct 31, 2016
     Author: Liang Ding
 -->
 <project
@@ -19,7 +19,7 @@
     
     <!-- Properties -->
     <properties>
-        <latke.version>2.3.3</latke.version>
+        <latke.version>2.3.5</latke.version>
         <servlet.version>3.1.0</servlet.version>
         <jetty.version>9.2.7.v20150116</jetty.version>
         <slf4j.version>1.7.7</slf4j.version>
